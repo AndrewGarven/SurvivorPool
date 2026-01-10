@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>{{ pool.name }} Leaderboard</title>
+    <style>
+      body { font-family: system-ui, -apple-system, sans-serif; margin: 2rem; }
+      table { border-collapse: collapse; width: 100%; max-width: 900px; }
+      th, td { border-bottom: 1px solid #ddd; padding: 0.6rem; text-align: left; }
+      th { background: #f6f6f6; }
+      .score { font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <h1>{{ pool.name }} — Leaderboard</h1>
+    <p>Join code: <strong>{{ pool.join_code }}</strong></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>First out</th>
+          <th>Winner 1</th>
+          <th>Winner 2</th>
+          <th>Last week</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.user.username }}</td>
+          <td>{{ r.entry.first_out }}</td>
+          <td>{{ r.entry.winner_1 }}</td>
+          <td>{{ r.entry.winner_2 }}</td>
+          <td>{{ r.last_week }}</td>
+          <td class="score">{{ r.score }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No entries yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
