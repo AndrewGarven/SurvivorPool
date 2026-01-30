@@ -1,0 +1,36 @@
+.sp-auth-btn{
+  position: absolute;
+  left: 46.25%;
+  transform: translateX(-50%);
+  top: 88.3%;
+  width: 30%;
+  height: 7.5%;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+
+  color: transparent;
+  text-indent: -9999px;
+  overflow: hidden; /* helps avoid any edge bleed */
+}
+
+.sp-auth-btn .torch{
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: 0% 0%;
+  pointer-events: none;
+}
+
+.sp-auth-btn .idle{
+  background-image: url("/static/pools/idle_login.png");
+  background-size: 400% 400%; /* 4x4 */
+  opacity: 1;
+}
+
+.sp-auth-btn .ignite{
+  background-image: url("/static/pools/click_login.png");
+  background-size: 400% 200%; /* 4x2 */
+  opacity: 0;
+}

@@ -1,0 +1,178 @@
+{% extends "pools/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard · Survivor Pool{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrap">
+
+  <!-- Background image -->
+  <img
+    class="dashboard-bg"
+    id="dashboard-bg"
+    src="{% static 'accounts/img/dashboard_frame.png' %}"
+    alt="Dashboard background"
+  >
+
+  <!-- Cards overlay (positioned by JS relative to the CONTAINED image rect) -->
+  <div class="dashboard-overlay" id="dashboard-overlay">
+
+    {% if seasons %}
+      {% for season, pools in seasons %}
+        <div class="season-group">
+          {% for item in pools %}
+
+            {% if item.pool.join_code %}
+              <a class="pool-card pool-card--framed"
+                 href="{% url 'leaderboard' item.pool.join_code %}">
+                <img class="pool-card-frame"
+                     src="{% static 'accounts/img/pool_frame.png' %}"
+                     alt="">
+            {% else %}
+              <div class="pool-card pool-card--disabled pool-card--framed">
+                <img class="pool-card-frame"
+                     src="{% static 'accounts/img/pool_frame.png' %}"
+                     alt="">
+            {% endif %}
+
+              <div class="pool-name">{{ item.pool.name }}</div>
+
+              <div class="pool-meta">
+                {% if item.rank %}
+                  <span class="pool-rank
+                    {% if item.rank == 1 %}pool-rank--gold
+                    {% elif item.rank == 2 %}pool-rank--silver
+                    {% elif item.rank == 3 %}pool-rank--bronze
+                    {% else %}pool-rank--standard
+                    {% endif %}
+                  ">
+                    Rank {{ item.rank }} / {{ item.total_players }}
+                  </span>
+                {% else %}
+                  <span class="pool-rank pool-rank--standard">
+                    Rank — / {{ item.total_players }}
+                  </span>
+                {% endif %}
+              </div>
+
+              <!-- Picks -->
+              <div class="pool-picks">
+
+                <div class="pick-row">
+                  <span class="pick-label">Winners</span>
+                  <span class="pick-value">
+
+                    {% if item.entry.winner_1 %}
+                      <span class="pick {% if item.winner_1_out %}pick--out{% endif %}">
+                        {{ item.entry.winner_1.name }}
+                      </span>
+                    {% else %}
+                      <span class="pick pick--empty">—</span>
+                    {% endif %}
+
+                    <span class="pick-sep">·</span>
+
+                    {% if item.entry.winner_2 %}
+                      <span class="pick {% if item.winner_2_out %}pick--out{% endif %}">
+                        {{ item.entry.winner_2.name }}
+                      </span>
+                    {% else %}
+                      <span class="pick pick--empty">—</span>
+                    {% endif %}
+
+                  </span>
+                </div>
+
+                <div class="pick-row">
+                  <span class="pick-label">First out</span>
+                  <span class="pick-value">
+                    {% if item.entry.first_out %}
+                      <span class="pick {% if item.first_out_out %}pick--out pick--firstout{% endif %}">
+                        {{ item.entry.first_out.name }}
+                      </span>
+                    {% else %}
+                      <span class="pick pick--empty">—</span>
+                    {% endif %}
+                  </span>
+                </div>
+
+              </div>
+
+              <div class="pool-code">
+                Join code:
+                <strong>{{ item.pool.join_code|default:"(missing)" }}</strong>
+              </div>
+
+              <div class="pool-cta">Open leaderboard →</div>
+
+            {% if item.pool.join_code %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+
+          {% endfor %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-title">You aren’t in any pools yet.</div>
+
+        <a class="dash-join-btn" href="{% url 'join_pool' %}">
+          Join a pool
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function(){
+  const bg = document.getElementById("dashboard-bg");
+  const overlay = document.getElementById("dashboard-overlay");
+  if(!bg || !overlay) return;
+
+  // Where the CARD GROUP should sit on the CONTAINED image (0..1)
+  // (Centered, slightly above mid usually feels best)
+  const OVR_X = 0.50;
+  const OVR_Y = 0.52;
+
+  // Fallback if naturalWidth isn't available yet
+  const FALLBACK_BASE = 1536;
+
+  function place(){
+    const r = bg.getBoundingClientRect();
+    if(r.width <= 0 || r.height <= 0) return;
+
+    // Position overlay relative to the rendered "contain" rectangle
+    const left = r.left + r.width * OVR_X;
+    const top  = r.top  + r.height * OVR_Y;
+
+    overlay.style.left = `${left}px`;
+    overlay.style.top  = `${top}px`;
+
+    // Scale based on how wide the image is rendered vs its natural width
+    const base = bg.naturalWidth || FALLBACK_BASE;
+    const s = r.width / base;
+    const clamped = Math.max(0.70, Math.min(1.20, s));
+    overlay.style.setProperty("--dash-scale", clamped.toFixed(4));
+  }
+
+  if(bg.complete) place();
+  bg.addEventListener("load", place);
+
+  let t = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = setTimeout(place, 50);
+  });
+
+  window.addEventListener("DOMContentLoaded", place);
+  window.addEventListener("load", place);
+})();
+</script>
+{% endblock %}

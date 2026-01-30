@@ -1,0 +1,354 @@
+/* ============================================================
+   LEADERBOARD — DASHBOARD-STYLE CONTAINED BACKGROUND + SCALED BOARD
+   File: pools/static/pools/css/leaderboard.css
+   ============================================================ */
+
+html, body{
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: #000;
+  overflow: hidden; /* match dashboard behavior */
+}
+
+*, *::before, *::after{ box-sizing: border-box; }
+
+/* Fixed full-screen wrapper */
+.lb-wrap{
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+/* Background image: contain + centered (gives side borders) */
+.lb-bg{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Overlay positioned by JS relative to the contained image rect */
+.lb-overlay{
+  position: fixed;
+  z-index: 2;
+
+  /* JS sets left/top in px and we center on that point */
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* JS sets scale here */
+  --lb-scale: 0.92;
+}
+
+/* Wooden board container */
+.lb-board{
+  position: relative;
+  width: 1100px;      /* design width */
+  max-width: 96vw;
+
+  background: url("../img/leaderboard_card.png") center / 100% 100% no-repeat;
+  padding: 120px 92px 86px 92px;
+
+  color: rgba(255, 244, 226, 0.96);
+  text-shadow: 0 2px 0 rgba(0,0,0,0.55);
+
+  transform: scale(var(--lb-scale));
+  transform-origin: center;
+}
+
+/* Make spacing adjust on smaller screens */
+@media (max-width: 980px){
+  .lb-board{ padding: 104px 54px 76px 54px; }
+}
+@media (max-width: 640px){
+  /* allow phone scrolling */
+  html, body{ overflow: auto; }
+
+  /* When scrolling is allowed, the fixed overlay centering can feel weird.
+     This makes it behave nicely at the top. */
+  .lb-overlay{
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    transform: none;
+
+    padding: 14px;
+    display: block;
+  }
+
+  .lb-board{
+    margin: 0 auto;
+    transform: scale(1); /* let it be readable on phones */
+    width: min(1100px, 96vw);
+    padding: 92px 24px 66px 24px;
+  }
+}
+
+/* --------------------------
+   Nav badge (same vibe)
+   -------------------------- */
+.sp-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 14px;
+  border-radius: 999px;
+
+  background: rgba(25, 14, 6, 0.35);
+  border: 1px solid rgba(255, 210, 150, 0.14);
+  color: rgba(248, 236, 214, 0.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.65);
+}
+
+/* --------------------------
+   Header (hidden but preserves spacing)
+   -------------------------- */
+.lb-board__header{
+  visibility: hidden;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.lb-board__title{
+  margin: 0;
+  font-size: 44px;
+  letter-spacing: 0.8px;
+  font-weight: 950;
+  color: rgba(255, 244, 226, 0.98);
+}
+
+.lb-board__subtitle{
+  margin-top: 8px;
+  font-size: 14px;
+  color: rgba(255, 236, 214, 0.84);
+}
+
+.lb-board__meta{
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.lb-meta-item{
+  padding: 8px 12px;
+  border-radius: 12px;
+
+  background: rgba(0,0,0,0.16);
+  border: 1px solid rgba(255, 210, 150, 0.14);
+}
+
+.lb-meta-label{
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 950;
+  color: rgba(255, 226, 190, 0.74);
+  margin-right: 8px;
+}
+
+.lb-meta-value{
+  font-size: 13px;
+  font-weight: 950;
+  color: rgba(255, 244, 226, 0.95);
+}
+
+/* --------------------------
+   Scrollable inner area (only this scrolls)
+   -------------------------- */
+.lb-board__scroll{
+  max-height: min(520px, 52vh);
+  overflow: auto;
+
+  padding: 10px 10px 4px;
+
+  background: rgba(0,0,0,0.14);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 210, 150, 0.12);
+}
+
+.lb-board__scroll::-webkit-scrollbar{ width: 12px; }
+.lb-board__scroll::-webkit-scrollbar-track{
+  background: rgba(0,0,0,0.18);
+  border-radius: 999px;
+}
+.lb-board__scroll::-webkit-scrollbar-thumb{
+  background: rgba(255, 210, 150, 0.18);
+  border: 1px solid rgba(255, 210, 150, 0.18);
+  border-radius: 999px;
+}
+
+/* --------------------------
+   Table styling
+   -------------------------- */
+.lb-table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  min-width: 860px;
+}
+
+@media (max-width: 820px){
+  .lb-table{ min-width: 760px; }
+  .lb-board__title{ font-size: 34px; }
+}
+
+.lb-table thead th{
+  text-align: left;
+  padding: 10px 12px 8px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 950;
+  color: rgba(255, 226, 190, 0.78);
+}
+
+.lb-row td{
+  padding: 14px 12px;
+  vertical-align: middle;
+
+  background: rgba(0,0,0,0.18);
+  border-top: 1px solid rgba(255, 210, 150, 0.14);
+  border-bottom: 1px solid rgba(0,0,0,0.28);
+
+  color: rgba(255, 244, 226, 0.94);
+}
+
+.lb-row td:first-child{
+  border-left: 1px solid rgba(255, 210, 150, 0.14);
+  border-top-left-radius: 14px;
+  border-bottom-left-radius: 14px;
+}
+.lb-row td:last-child{
+  border-right: 1px solid rgba(255, 210, 150, 0.14);
+  border-top-right-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
+
+.lb-row:hover td{
+  background: rgba(255, 200, 120, 0.07);
+  border-top-color: rgba(255, 210, 150, 0.22);
+}
+
+.lb-row.is-1 td{ background: rgba(255, 200, 120, 0.10); }
+.lb-row.is-2 td{ background: rgba(220, 230, 240, 0.07); }
+.lb-row.is-3 td{ background: rgba(224, 160, 112, 0.08); }
+
+.rank-medallion{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 48px;
+  height: 40px;
+  padding: 0 12px;
+
+  border-radius: 999px;
+  font-weight: 950;
+  font-size: 16px;
+
+  background: rgba(0,0,0,0.26);
+  border: 1px solid rgba(255, 210, 150, 0.20);
+
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.06),
+    0 6px 16px rgba(0,0,0,0.22);
+}
+
+.player-name{
+  font-size: 17px;
+  font-weight: 950;
+  color: rgba(255, 244, 226, 0.98);
+}
+
+.player-tag{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255, 236, 214, 0.78);
+}
+
+.picks{
+  display: grid;
+  gap: 8px;
+}
+
+.pick-line{
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.pick-label{
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 950;
+  color: rgba(255, 226, 190, 0.72);
+  text-align: right;
+}
+
+.pick-value{
+  font-weight: 900;
+  color: rgba(255, 244, 226, 0.94);
+}
+
+.week-etched,
+.score-etched{
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 8px 12px;
+  border-radius: 12px;
+
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255, 210, 150, 0.16);
+
+  font-weight: 950;
+  color: rgba(255, 244, 226, 0.96);
+}
+
+.score-etched{
+  min-width: 78px;
+  font-size: 18px;
+}
+
+.lb-empty td{
+  background: transparent;
+  border: none;
+  padding: 26px 10px;
+}
+
+.empty-state{
+  text-align: center;
+  padding: 18px 14px;
+
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255, 210, 150, 0.14);
+  border-radius: 14px;
+}
+
+.empty-title{
+  font-weight: 950;
+  font-size: 16px;
+}
+
+.empty-sub{
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(255, 236, 214, 0.78);
+}

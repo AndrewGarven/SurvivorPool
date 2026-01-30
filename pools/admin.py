@@ -13,7 +13,8 @@ class EntryAdmin(admin.ModelAdmin):
 
 @admin.register(Season)
 class SeasonAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "created_at")
+    list_display = ("name", "slug", "sole_survivor", "created_at")
+    list_filter = ("sole_survivor",)
 
 @admin.register(Contestant)
 class ContestantAdmin(admin.ModelAdmin):

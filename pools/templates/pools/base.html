@@ -1,0 +1,59 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Survivor Pool{% endblock %}</title>
+
+  {% if request.resolver_match.url_name != "login" %}
+    <link rel="stylesheet" href="{% static 'pools/styles.css' %}">
+  {% endif %}
+
+  {% block page_css %}{% endblock %}
+</head>
+
+
+<body class="{% block body_class %}{% endblock %}">
+
+  {% if request.resolver_match.url_name != "login" %}
+    <div class="container">
+
+      <div class="nav">
+        <div class="brand">Survivor Pool</div>
+
+        <div style="display:flex; align-items:center; gap:.75rem;">
+          {% block nav_right %}{% endblock %}
+
+          {% if user.is_authenticated %}
+            <span style="color:#93a4c7; font-size:.9rem;">{{ user.username }}</span>
+
+            <form method="post" action="{% url 'logout' %}" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" style="padding:.35rem .75rem; border-radius:999px;
+                    border:1px solid rgba(255,255,255,0.12);
+                    background: transparent;
+                    color:#e8eefc; font-weight:600; cursor:pointer;">
+                Logout
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'login' %}" style="padding:.35rem .75rem; border-radius:999px;
+                  border:1px solid rgba(255,255,255,0.12);
+                  text-decoration:none; color:#e8eefc; font-weight:600;">
+              Login
+            </a>
+          {% endif %}
+        </div>
+      </div>
+  {% endif %}
+
+  {# ONLY DEFINE THIS ONCE #}
+  {% block content %}{% endblock %}
+
+  {% if request.resolver_match.url_name != "login" %}
+    </div>
+  {% endif %}
+
+</body>
+</html>

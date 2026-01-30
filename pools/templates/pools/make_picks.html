@@ -1,0 +1,93 @@
+{% extends "pools/base.html" %}
+{% load static %}
+
+{% block title %}Make Picks · Survivor Pool{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static 'pools/css/make_picks.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="picks-wrap">
+  <div class="picks-stage">
+
+    <!-- Background image -->
+    <img
+      class="picks-bg"
+      id="picks-bg"
+      src="{% static 'pools/img/picks_frame.png' %}"
+      alt="Make picks background"
+    >
+
+    <form method="post" class="picks-form" novalidate>
+      {% csrf_token %}
+
+      <div class="picks-ui" id="picks-ui">
+
+        <div class="picks-title">Make your picks</div>
+        <div class="picks-sub">
+          Choose your winners and first elimination.
+        </div>
+
+        <!-- WINNER 1 -->
+        <div class="field">
+          {{ form.winner_1 }}
+          {{ form.winner_1.errors }}
+        </div>
+
+        <!-- WINNER 2 -->
+        <div class="field">
+          {{ form.winner_2 }}
+          {{ form.winner_2.errors }}
+        </div>
+
+        <!-- FIRST OUT -->
+        <div class="field">
+          {{ form.first_out }}
+          {{ form.first_out.errors }}
+        </div>
+
+        <button class="picks-btn" type="submit">
+          Save picks
+        </button>
+
+        <a class="picks-btn picks-btn--secondary"
+           href="{% url 'dashboard' %}">
+          Cancel
+        </a>
+
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const bg = document.getElementById("picks-bg");
+  const ui = document.getElementById("picks-ui");
+  if(!bg || !ui) return;
+
+  const UI_X = 0.50;
+  const UI_Y = 0.47;
+  const FALLBACK_BASE = 1536;
+
+  function place(){
+    const r = bg.getBoundingClientRect();
+    if(r.width <= 0 || r.height <= 0) return;
+
+    ui.style.left = `${r.left + r.width * UI_X}px`;
+    ui.style.top  = `${r.top  + r.height * UI_Y}px`;
+
+    const base = bg.naturalWidth || FALLBACK_BASE;
+    const s = r.width / base;
+    const clamped = Math.max(0.70, Math.min(1.15, s));
+    ui.style.setProperty("--ui-scale", clamped.toFixed(4));
+  }
+
+  if(bg.complete) place();
+  bg.addEventListener("load", place);
+  window.addEventListener("resize", place);
+})();
+</script>
+{% endblock %}

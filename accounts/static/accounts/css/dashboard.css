@@ -1,0 +1,349 @@
+/* ============================================================
+   DASHBOARD — LOCK CARD TO CONTAINED BACKGROUND
+   File: accounts/static/accounts/css/dashboard.css
+   ============================================================ */
+
+html, body{
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+*, *::before, *::after{ box-sizing: border-box; }
+
+.dashboard-wrap{
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+/* Background image (contain + centered) */
+.dashboard-bg{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+
+  filter: brightness(1);
+
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Overlay: JS sets left/top in px to match contained image rect */
+.dashboard-overlay{
+  position: fixed;
+  z-index: 2;
+
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* scaling variable set by JS */
+  --dash-scale: 1;
+}
+
+.season-group{
+  margin: 0 auto;
+}
+
+/* ============================================================
+   POOL CARD (scaled)
+   ============================================================ */
+
+.pool-card{
+  position: relative;
+  display: block;
+  border-radius: calc(110px * var(--dash-scale));
+  text-decoration: none;
+  overflow: hidden;
+
+  width: calc(840px * var(--dash-scale));
+  max-width: 72vw;
+  min-height: calc(180px * var(--dash-scale));
+
+  transition: transform .25s ease, filter .25s ease;
+}
+
+/* Frame layer */
+.pool-card-frame{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Content above frame */
+.pool-card > *:not(.pool-card-frame){
+  position: relative;
+  z-index: 2;
+
+  transform: translateY(calc(120px * var(--dash-scale)));
+}
+
+/* Framed padding */
+.pool-card--framed{
+  padding:
+    calc(105px * var(--dash-scale))
+    calc(114px * var(--dash-scale))
+    calc(270px * var(--dash-scale))
+    calc(120px * var(--dash-scale));
+
+  color: rgba(248, 236, 214, 0.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.45);
+
+  filter: drop-shadow(
+    0 calc(22px * var(--dash-scale))
+    calc(34px * var(--dash-scale))
+    rgba(0,0,0,0.55)
+  );
+}
+
+.pool-card--framed:hover{
+  transform: translateY(calc(-5px * var(--dash-scale)));
+  filter: drop-shadow(
+    0 calc(34px * var(--dash-scale))
+    calc(50px * var(--dash-scale))
+    rgba(0,0,0,0.62)
+  ) brightness(1.03);
+}
+
+/* Disabled */
+.pool-card--disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ============================================================
+   CONTENT
+   ============================================================ */
+
+.pool-name{
+  font-size: calc(40px * var(--dash-scale));
+  font-weight: 900;
+  margin-bottom: calc(12px * var(--dash-scale));
+  letter-spacing: 0.55px;
+  color: rgba(255, 244, 226, 0.98);
+}
+
+.pool-meta{
+  margin: calc(10px * var(--dash-scale)) 0 calc(16px * var(--dash-scale));
+  position: relative; /* anchors rank + CTA */
+}
+
+/* ============================================================
+   RANK BADGES — TOP RIGHT
+   ============================================================ */
+
+.pool-rank{
+  position: absolute;
+  top: calc(-100px * var(--dash-scale));
+  right: calc(-6px * var(--dash-scale));
+
+  display: inline-flex;
+  align-items: center;
+  gap: calc(10px * var(--dash-scale));
+
+  font-size: calc(20px * var(--dash-scale));
+  font-weight: 900;
+  padding: calc(10px * var(--dash-scale)) calc(22px * var(--dash-scale));
+  border-radius: 999px;
+
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+
+  backdrop-filter: blur(2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 3px 10px rgba(0,0,0,0.45);
+
+  text-shadow: 0 1px 0 rgba(0,0,0,0.55);
+}
+
+/* Gold */
+.pool-rank--gold{
+  color: rgba(255, 248, 215, 0.98);
+  background: linear-gradient(135deg,#f6d365,#f1b83a,#c9971a,#a87808);
+  border: 1px solid rgba(255,215,120,0.85);
+}
+
+/* Silver */
+.pool-rank--silver{
+  color: rgba(245,248,250,0.98);
+  background: linear-gradient(135deg,#f2f4f6,#d6d9dd,#b8bcc2,#9aa0a8);
+  border: 1px solid rgba(210,215,225,0.85);
+}
+
+/* Bronze */
+.pool-rank--bronze{
+  color: rgba(255,235,220,0.98);
+  background: linear-gradient(135deg,#e0a070,#c07a3c,#ce7323,#6f3d18);
+  border: 1px solid rgba(210,150,110,0.85);
+}
+
+/* Standard */
+.pool-rank--standard{
+  color: rgba(255,230,200,0.92);
+  background: linear-gradient(135deg,rgba(55,28,14,.85),rgba(30,16,8,.85));
+  border: 1px solid rgba(255,200,150,0.18);
+}
+
+/* ============================================================
+   PICKS
+   ============================================================ */
+
+.pool-picks{
+  margin: calc(18px * var(--dash-scale)) 0 calc(22px * var(--dash-scale));
+  display: grid;
+  gap: calc(14px * var(--dash-scale));
+}
+
+.pick-row{
+  display: grid;
+  grid-template-columns: calc(110px * var(--dash-scale)) 1fr;
+  gap: calc(16px * var(--dash-scale));
+  align-items: start;
+
+  padding: calc(12px * var(--dash-scale)) 0;
+  border-bottom: 1px solid rgba(255,220,170,0.10);
+}
+
+.pick-row:last-child{
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.pick-label{
+  font-size: calc(14px * var(--dash-scale));
+  font-weight: 950;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: right;
+  color: rgba(255,226,190,0.70);
+}
+
+.pick-value{
+  font-size: calc(18px * var(--dash-scale));
+  line-height: 1.35;
+  color: rgba(248,236,214,0.92);
+  min-width: 0;
+}
+
+.pick{
+  font-weight: 900;
+  padding: calc(5px * var(--dash-scale)) calc(12px * var(--dash-scale));
+  border-radius: 999px;
+  background: rgba(10,8,6,0.25);
+  border: 1px solid rgba(255,210,150,0.12);
+  display: inline-flex;
+  align-items: center;
+}
+
+.pick-sep{ display: none; }
+.pick--empty{ opacity: 0.60; }
+
+.pick--out{
+  text-decoration: line-through;
+  text-decoration-thickness: 3px;
+  text-decoration-color: rgba(255,70,50,0.95);
+}
+
+.pick--firstout{
+  text-decoration-color: rgba(90,220,130,0.95);
+  color: rgba(190,255,220,0.95);
+}
+
+/* ============================================================
+   REMOVE JOIN CODE
+   ============================================================ */
+.pool-code{ display: none !important; }
+
+/* ============================================================
+   CTA — BOTTOM RIGHT
+   ============================================================ */
+.pool-cta{
+  position: absolute;
+  right: 0;
+  bottom: calc(-6px * var(--dash-scale));
+
+  font-size: calc(18px * var(--dash-scale));
+  font-weight: 900;
+  color: rgba(255,210,140,0.95);
+
+  padding: calc(6px * var(--dash-scale)) calc(10px * var(--dash-scale));
+  border-radius: 999px;
+
+  background: rgba(10, 8, 6, 0.18);
+  border: 1px solid rgba(255, 210, 150, 0.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.empty-state{
+  font-size: calc(22px * var(--dash-scale));
+  text-align: center;
+  color: rgba(255,255,255,0.85);
+  display: grid;
+  gap: calc(14px * var(--dash-scale));
+  justify-items: center;
+}
+
+.empty-title{
+  font-weight: 950;
+  letter-spacing: 0.3px;
+}
+
+/* Dashboard join button (matches your login button vibe) */
+.dash-join-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: calc(10px * var(--dash-scale)) calc(18px * var(--dash-scale));
+  border-radius: 999px;
+
+  border: 1px solid rgba(246, 194, 91, 0.55);
+  background: linear-gradient(180deg, rgba(255,122,47,.96), rgba(246,194,91,.96));
+
+  color: rgba(26,12,6,.95);
+  font-weight: 950;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  box-shadow:
+    0 calc(16px * var(--dash-scale)) calc(34px * var(--dash-scale)) rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.25);
+
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+
+.dash-join-btn:hover{
+  filter: brightness(1.06) saturate(1.05);
+  box-shadow:
+    0 calc(18px * var(--dash-scale)) calc(40px * var(--dash-scale)) rgba(0,0,0,.52),
+    0 0 0 4px rgba(24,184,176,.10),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.dash-join-btn:active{
+  transform: scale(.97);
+}
+
+@media (max-width: 720px){
+  html, body{ overflow: auto; }
+  .pool-card{ max-width: 94vw; }
+}

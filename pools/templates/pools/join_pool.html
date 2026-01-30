@@ -1,0 +1,88 @@
+{% extends "pools/base.html" %}
+{% load static %}
+
+{% block title %}Join a Pool · Survivor Pool{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static 'pools/css/join_pool.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="join-wrap">
+  <div class="join-stage">
+
+    <!-- Background image (contain + centered) -->
+    <img
+      class="join-bg"
+      id="join-bg"
+      src="{% static 'pools/img/join_frame.png' %}"
+      alt="Join pool background"
+    >
+
+    <form class="join-form" method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- Non-field errors (if any) -->
+      {{ form.non_field_errors }}
+
+      <div class="join-ui" id="join-ui">
+        <div class="join-title">Join a pool</div>
+        <div class="join-sub">Enter a join code to start making picks.</div>
+
+        <div class="field">
+          {{ form.join_code }}
+          {{ form.join_code.errors }}
+        </div>
+
+        <button class="join-btn" type="submit">
+          Join
+        </button>
+
+        <a class="join-btn join-btn--secondary" href="{% url 'dashboard' %}">
+          Back
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const bg = document.getElementById("join-bg");
+  const ui = document.getElementById("join-ui");
+  if(!bg || !ui) return;
+
+  // Where the UI should sit on the CONTAINED image (0..1)
+  const UI_X = 0.50;
+  const UI_Y = 0.46;
+
+  const FALLBACK_BASE = 1536;
+
+  function place(){
+    const r = bg.getBoundingClientRect();
+    if(r.width <= 0 || r.height <= 0) return;
+
+    ui.style.left = `${r.left + r.width * UI_X}px`;
+    ui.style.top  = `${r.top  + r.height * UI_Y}px`;
+
+    const base = bg.naturalWidth || FALLBACK_BASE;
+    const s = r.width / base;
+    const clamped = Math.max(0.70, Math.min(1.20, s));
+    ui.style.setProperty("--ui-scale", clamped.toFixed(4));
+  }
+
+  if(bg.complete) place();
+  bg.addEventListener("load", place);
+
+  let t = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = setTimeout(place, 50);
+  });
+
+  window.addEventListener("DOMContentLoaded", place);
+  window.addEventListener("load", place);
+})();
+</script>
+{% endblock %}

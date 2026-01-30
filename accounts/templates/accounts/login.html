@@ -1,0 +1,130 @@
+{% extends "pools/base.html" %}
+{% load static %}
+
+{% block title %}Login · Survivor Pool{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-stage">
+
+    <!-- Background image (contain + centered) -->
+    <img
+      class="login-bg"
+      id="login-bg"
+      src="{% static 'accounts/img/login_frame.png' %}"
+      alt="Login background"
+    >
+
+    <!-- Login form overlay -->
+    <form class="login-form" method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <!-- This is now positioned by JS relative to the IMAGE rectangle -->
+      <div class="login-ui" id="login-ui">
+
+        <div class="field username">
+          <input
+            type="text"
+            name="username"
+            autocomplete="username"
+            required
+            placeholder="Username"
+          >
+        </div>
+
+        <div class="field password">
+          <input
+            type="password"
+            name="password"
+            id="password-input"
+            autocomplete="current-password"
+            required
+            placeholder="Password"
+          >
+          <button
+            type="button"
+            class="toggle-password"
+            aria-label="Show password"
+            onclick="togglePassword()"
+          >
+            👁
+          </button>
+        </div>
+
+        <button class="login-btn" type="submit">Sign in</button>
+
+        <a href="{% url 'signup' %}" class="login-btn login-btn--secondary">
+          Create account
+        </a>
+
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+function togglePassword(){
+  const input = document.getElementById("password-input");
+  input.type = input.type === "password" ? "text" : "password";
+}
+
+/**
+ * Lock UI to the rendered (object-fit: contain) image rectangle.
+ * - --ui-x-img / --ui-y-img are percentages of the IMAGE, not the viewport.
+ * - UI scaling follows the image width so it stays proportionally sized.
+ */
+(function(){
+  const img = document.getElementById("login-bg");
+  const ui  = document.getElementById("login-ui");
+
+  // Tune these ONCE (image-relative anchor point).
+  // These are percentages of the image (0..1).
+  const UI_X = 0.50;  // centered horizontally
+  const UI_Y = 0.82;  // 82% down the image
+
+  function place(){
+    if(!img || !ui) return;
+
+    const r = img.getBoundingClientRect();
+    if(r.width <= 0 || r.height <= 0) return;
+
+    // Position UI relative to the actual image box
+    const left = r.left + r.width * UI_X;
+    const top  = r.top  + r.height * UI_Y;
+
+    ui.style.left = `${left}px`;
+    ui.style.top  = `${top}px`;
+
+    // Scale UI proportionally with the image width.
+    // Use the image's natural width as the "design-time" reference.
+    const base = img.naturalWidth || 1536; // fallback (your file is likely 1536px wide)
+    const s = r.width / base;
+
+    // Clamp keeps it usable on extreme sizes
+    const clamped = Math.max(0.70, Math.min(1.15, s));
+    ui.style.setProperty("--ui-scale", clamped.toFixed(4));
+  }
+
+  // Run after image loads (important for naturalWidth)
+  if(img.complete) place();
+  img.addEventListener("load", place);
+
+  // Re-place on resize (debounced)
+  let t = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = setTimeout(place, 50);
+  });
+
+  // Also place after fonts/layout settle
+  window.addEventListener("DOMContentLoaded", place);
+  window.addEventListener("load", place);
+})();
+</script>
+{% endblock %}

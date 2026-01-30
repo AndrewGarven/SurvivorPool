@@ -1,0 +1,124 @@
+{% extends "pools/base.html" %}
+{% load static %}
+
+{% block title %}Create Account · Survivor Pool{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'accounts/css/signup.css' %}">
+
+<div class="signup-wrap">
+  <div class="signup-stage">
+
+    <!-- Background image (contain + centered) -->
+    <img
+      class="signup-bg"
+      id="signup-bg"
+      src="{% static 'accounts/img/signup_frame.png' %}"
+      alt="Signup background"
+    >
+
+    <!-- Signup form overlay -->
+    <form class="signup-form" method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- Django non-field errors -->
+      {{ form.non_field_errors }}
+
+      <!-- UI group positioned by JS (like login) -->
+      <div class="login-ui" id="signup-ui">
+
+        <div class="auth-heading">
+          <div class="auth-title">Create account</div>
+          <div class="auth-sub">Pick a username and password to join pools and make your picks.</div>
+        </div>
+
+        <div class="field username">
+          {# force class + placeholder while still using Django field #}
+          {{ form.username }}
+          {{ form.username.errors }}
+        </div>
+
+        <div class="field password">
+          {{ form.password1 }}
+          <button
+            type="button"
+            class="toggle-password"
+            aria-label="Show password"
+            onclick="togglePassword('id_password1')"
+          >👁</button>
+          {{ form.password1.errors }}
+        </div>
+
+        <div class="field password">
+          {{ form.password2 }}
+          <button
+            type="button"
+            class="toggle-password"
+            aria-label="Show confirm password"
+            onclick="togglePassword('id_password2')"
+          >👁</button>
+          {{ form.password2.errors }}
+        </div>
+
+        <button class="login-btn" type="submit">
+          Create account
+        </button>
+
+        <a class="login-btn login-btn--secondary" href="{% url 'login' %}">
+          Back to sign in
+        </a>
+
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+function togglePassword(id){
+  const input = document.getElementById(id);
+  if(!input) return;
+  input.type = (input.type === "password") ? "text" : "password";
+}
+
+(function(){
+  const bg = document.getElementById("signup-bg");
+  const ui = document.getElementById("signup-ui");
+  if(!bg || !ui) return;
+
+  // Place the form in the center of the board/card area.
+  // Tweak these to taste (0..1 relative to the contained image rectangle).
+  const UI_X = 0.50;
+  const UI_Y = 0.47;
+
+  const FALLBACK_BASE = 1536;
+
+  function place(){
+    const r = bg.getBoundingClientRect();
+    if(r.width <= 0 || r.height <= 0) return;
+
+    const left = r.left + r.width * UI_X;
+    const top  = r.top  + r.height * UI_Y;
+
+    ui.style.left = `${left}px`;
+    ui.style.top  = `${top}px`;
+
+    const base = bg.naturalWidth || FALLBACK_BASE;
+    const s = r.width / base;
+    const clamped = Math.max(0.70, Math.min(1.20, s));
+    document.documentElement.style.setProperty("--ui-scale", clamped.toFixed(4));
+  }
+
+  if(bg.complete) place();
+  bg.addEventListener("load", place);
+
+  let t = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = setTimeout(place, 50);
+  });
+
+  window.addEventListener("load", place);
+})();
+</script>
+{% endblock %}

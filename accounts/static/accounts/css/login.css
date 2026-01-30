@@ -1,0 +1,169 @@
+/* ============================================================
+   ACCOUNTS: LOGIN (UI LOCKED TO CONTAINED IMAGE)
+   ============================================================ */
+
+html, body{
+  height: 100%;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #000;
+}
+
+*, *::before, *::after{ box-sizing: border-box; }
+
+.login-wrap{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+.login-stage{
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.login-bg{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.login-form{
+  position: absolute;
+  inset: 0;
+}
+
+/* Design knobs (BASE values). JS scales them via --ui-scale. */
+:root{
+  --ui-scale: 1; /* JS updates this */
+
+  --ui-width: clamp(260px, 30vw, 480px);
+  --ui-gap: clamp(8px, 1.3vh, 14px);
+  --ui-input-h: 36px; /* base; scaled below */
+  --ui-btn-h: 36px;   /* base; scaled below */
+  --ui-font: 15px;    /* base; scaled below */
+
+  --sp-gold:  #f6c25b;
+  --sp-ember: #ff7a2f;
+  --sp-wood:  #2a140b;
+  --sp-wood2: #3a1c0f;
+  --sp-teal:  #18b8b0;
+}
+
+/* UI is now absolutely positioned by JS with pixel left/top
+   that correspond to the contained image rectangle */
+.login-ui{
+  position: fixed; /* fixed so left/top (px) are viewport-anchored */
+  transform: translate(-50%, -50%);
+
+  width: calc(var(--ui-width) * var(--ui-scale));
+
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-gap) * var(--ui-scale));
+
+  z-index: 10;
+}
+
+.login-ui .field{ position: relative; }
+
+.login-form input{
+  width: 100%;
+  height: calc(var(--ui-input-h) * var(--ui-scale));
+
+  border-radius: 999px;
+  border: 1px solid rgba(246, 194, 91, 0.45);
+  background: linear-gradient(180deg, rgba(42,20,11,.82), rgba(18,9,6,.78));
+  color: rgba(255,247,235,.92);
+
+  padding: 0 calc(18px * var(--ui-scale));
+  font-size: calc(var(--ui-font) * var(--ui-scale));
+
+  outline: none;
+}
+
+.login-form input::placeholder{
+  color: rgba(246, 194, 91, 0.7);
+}
+
+.login-form input:focus{
+  border-color: rgba(24, 184, 176, 0.75);
+  box-shadow: 0 0 0 4px rgba(24,184,176,.12);
+}
+
+/* ================= BUTTON ================= */
+.login-btn{
+  width: 25%;
+  min-width: calc(120px * var(--ui-scale));
+  align-self: center;
+
+  height: calc(var(--ui-btn-h) * var(--ui-scale));
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  border-radius: 999px;
+  border: 1px solid rgba(246, 194, 91, 0.55);
+
+  background: linear-gradient(180deg, rgba(255,122,47,.96), rgba(246,194,91,.96));
+
+  color: rgba(26,12,6,.95);
+  font-weight: 900;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  font-size: calc(13px * var(--ui-scale));
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow: 0 16px 34px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.25);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+
+.login-btn:hover{
+  filter: brightness(1.06) saturate(1.05);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.52),
+    0 0 0 4px rgba(24,184,176,.10),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.login-btn:active{ transform: scale(.97); }
+
+.login-btn--secondary{ margin-top: 2px; }
+
+/* ================= PASSWORD TOGGLE ================= */
+.login-ui .field.password{ position: relative; }
+
+.toggle-password{
+  position: absolute;
+  right: calc(14px * var(--ui-scale));
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: transparent;
+  border: none;
+
+  color: rgba(255,255,255,.75);
+  font-size: calc(18px * var(--ui-scale));
+  cursor: pointer;
+}
+
+.login-form input[type="password"]{
+  padding-right: calc(44px * var(--ui-scale));
+}
+

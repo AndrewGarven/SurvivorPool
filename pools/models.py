@@ -17,6 +17,12 @@ class Season(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    sole_survivor = models.ForeignKey("pools.Contestant",
+                                      on_delete=models.SET_NULL,
+                                      null=True,
+                                      blank=True,
+                                      related_name="won_seasons")
+
     def __str__(self):
         return self.name
     
@@ -34,7 +40,7 @@ class Contestant(models.Model):
         unique_together = ("season", "name")
 
     def __str__(self):
-        return f"{self.name} ({self.season.name})"
+        return f"{self.name}"
     
 class Episode(models.Model):
     """

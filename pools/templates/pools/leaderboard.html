@@ -1,45 +1,173 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>{{ pool.name }} Leaderboard</title>
-    <style>
-      body { font-family: system-ui, -apple-system, sans-serif; margin: 2rem; }
-      table { border-collapse: collapse; width: 100%; max-width: 900px; }
-      th, td { border-bottom: 1px solid #ddd; padding: 0.6rem; text-align: left; }
-      th { background: #f6f6f6; }
-      .score { font-weight: 700; }
-    </style>
-  </head>
-  <body>
-    <h1>{{ pool.name }} — Leaderboard</h1>
-    <p>Join code: <strong>{{ pool.join_code }}</strong></p>
+{% extends "pools/base.html" %}
+{% load static %}
+{% block title %}{{ pool.name }} — Leaderboard{% endblock %}
 
-    <table>
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>First out</th>
-          <th>Winner 1</th>
-          <th>Winner 2</th>
-          <th>Last week</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in rows %}
-        <tr>
-          <td>{{ r.user.username }}</td>
-          <td>{{ r.entry.first_out }}</td>
-          <td>{{ r.entry.winner_1 }}</td>
-          <td>{{ r.entry.winner_2 }}</td>
-          <td>{{ r.last_week }}</td>
-          <td class="score">{{ r.score }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6">No entries yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </body>
-</html>
+{% block nav_right %}
+  <div class="sp-badge">
+    Join code: <strong>{{ pool.join_code }}</strong>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'pools/css/leaderboard.css' %}">
+
+  <div class="lb-wrap">
+
+    <!-- Background image (contain + centered, like dashboard) -->
+    <img
+      class="lb-bg"
+      id="lb-bg"
+      src="{% static 'pools/img/leaderboard_frame.png' %}"
+      alt="Leaderboard background"
+    >
+
+    <!-- Centered board overlay -->
+    <div class="lb-overlay" id="lb-overlay">
+
+      <div class="lb-board" aria-label="Leaderboard board">
+
+        <header class="lb-board__header">
+          <h1 class="lb-board__title">{{ pool.name }}</h1>
+          <div class="lb-board__subtitle">
+            Leaderboard — Scores update automatically based on weekly eliminations
+          </div>
+
+          <div class="lb-board__meta">
+            <div class="lb-meta-item">
+              <span class="lb-meta-label">Season</span>
+              <span class="lb-meta-value">{{ pool.season.name|default:"Survivor" }}</span>
+            </div>
+            <div class="lb-meta-item">
+              <span class="lb-meta-label">Players</span>
+              <span class="lb-meta-value">{{ rows|length }}</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="lb-board__scroll" role="region" aria-label="Leaderboard results">
+          <table class="lb-table">
+            <thead>
+              <tr>
+                <th class="col-rank">Rank</th>
+                <th class="col-player">Player</th>
+                <th class="col-picks">Picks</th>
+                <th class="col-week">Last week</th>
+                <th class="col-total">Total</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for r in rows %}
+              <tr class="lb-row {% if r.rank == 1 %}is-1{% elif r.rank == 2 %}is-2{% elif r.rank == 3 %}is-3{% endif %}">
+                <td class="td-rank">
+                  <div class="rank-medallion">{{ r.rank }}</div>
+                </td>
+
+                <td class="td-player">
+                  <div class="player-name">{{ r.user.username }}</div>
+                  <div class="player-tag">
+                    {% if r.rank == 1 %}🏆 Top Survivor
+                    {% elif r.rank == 2 %}🔥 Closing In
+                    {% elif r.rank == 3 %}🪵 Holding Strong
+                    {% else %}🗺️ Still in the game
+                    {% endif %}
+                  </div>
+                </td>
+
+                <td class="td-picks">
+                  <div class="picks">
+                    <div class="pick-line">
+                      <span class="pick-label">First out</span>
+                      <span class="pick-value">{{ r.entry.first_out }}</span>
+                    </div>
+                    <div class="pick-line">
+                      <span class="pick-label">Winner 1</span>
+                      <span class="pick-value">{{ r.entry.winner_1 }}</span>
+                    </div>
+                    <div class="pick-line">
+                      <span class="pick-label">Winner 2</span>
+                      <span class="pick-value">{{ r.entry.winner_2 }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="td-week">
+                  <div class="week-etched">{{ r.last_week }}</div>
+                </td>
+
+                <td class="td-total">
+                  <div class="score-etched">{{ r.score }}</div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr class="lb-empty">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-title">No entries yet</div>
+                    <div class="empty-sub">Once players submit picks, you’ll see them ranked here.</div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    const bg = document.getElementById("lb-bg");
+    const overlay = document.getElementById("lb-overlay");
+    if(!bg || !overlay) return;
+
+    // A single tuning knob:
+    // 1.00 = board scales exactly like background image
+    // 0.92 = board slightly smaller (your current preference)
+    const SCALE_MULTIPLIER = 0.80;
+
+    // Clamp so it doesn’t become tiny on small windows or huge on ultrawide
+    const MIN_SCALE = 0.70;
+    const MAX_SCALE = 1.10;
+
+    // Optional: If you want to “anchor” the board slightly above/below center,
+    // change these (0..1). Leave at 0.50/0.50 to stay centered.
+    const ANCHOR_X = 0.50;
+    const ANCHOR_Y = 0.50;
+
+    function place(){
+      const r = bg.getBoundingClientRect();
+      if(r.width <= 0 || r.height <= 0) return;
+
+      // Center overlay relative to the CONTAINED image rect (like dashboard)
+      const left = r.left + r.width * ANCHOR_X;
+      const top  = r.top  + r.height * ANCHOR_Y;
+
+      overlay.style.left = `${left}px`;
+      overlay.style.top  = `${top}px`;
+
+      // Scale is based on how the contained image is rendered relative to its natural size
+      const natW = bg.naturalWidth || r.width;
+      const scale = (r.width / natW) * SCALE_MULTIPLIER;
+      const clamped = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+
+      overlay.style.setProperty("--lb-scale", clamped.toFixed(4));
+    }
+
+    if(bg.complete) place();
+    bg.addEventListener("load", place);
+
+    let t = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(t);
+      t = setTimeout(place, 50);
+    });
+
+    window.addEventListener("DOMContentLoaded", place);
+    window.addEventListener("load", place);
+  })();
+  </script>
+
+{% endblock %}
