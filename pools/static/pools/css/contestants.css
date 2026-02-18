@@ -1,0 +1,384 @@
+/* ============================================================
+   CONTESTANTS — NOTEBOOK INTEGRATION (PRODUCTION QUALITY)
+   ============================================================ */
+
+html, body{
+  width:100%;
+  height:100%;
+  margin:0;
+  background:#000;
+  overflow:hidden;
+  font-family:'Merriweather', Georgia, serif;
+}
+
+*, *::before, *::after{
+  box-sizing:border-box;
+}
+
+:root{
+  --overlay-x: 0.525;
+  --overlay-y: 0.50;  /* 0..1 only */
+}
+
+/* ============================================================
+   FULLSCREEN APP WRAPPER
+   ============================================================ */
+
+.catalog-app{
+  position:fixed;
+  inset:0;
+  background:#000;
+}
+
+
+/* ============================================================
+   NOTEBOOK BACKGROUND IMAGE
+   ============================================================ */
+
+.ct-bg{
+  position:absolute;
+  inset:0;
+
+  width:100%;
+  height:100%;
+
+  object-fit:contain;
+  object-position:center;
+
+  z-index:0;
+
+  pointer-events:none;
+  user-select:none;
+}
+
+
+/* ============================================================
+   OVERLAY — THIS IS THE CRITICAL FIX
+   Anchors flipbook INSIDE notebook page area
+   ============================================================ */
+
+.ct-overlay{
+
+  position:fixed;
+  z-index:5;
+
+  transform:translate(-50%, -50%);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* exact tuning controls */
+  --ct-scale: 0.88;
+  --page-offset-x: 0px;
+  --page-offset-y: 18px;
+}
+
+
+/* ============================================================
+   BOOK CONTAINER
+   ============================================================ */
+
+.book{
+
+  width:900px;
+  height:640px;
+
+  transform:
+    translate(
+      var(--page-offset-x),
+      var(--page-offset-y)
+    )
+    scale(var(--ct-scale));
+
+  transform-origin:center;
+
+  outline:none;
+
+  background:transparent;
+
+}
+
+
+/* Remove ALL artificial card styling */
+.stf__parent,
+.stf__wrapper,
+.stf__block{
+  background:transparent !important;
+}
+
+.stf__item{
+  border-radius:0;
+  overflow:hidden;
+}
+
+
+/* ============================================================
+   PAGE — MAKE IT LOOK LIKE PAPER INSIDE NOTEBOOK
+   ============================================================ */
+
+.page{
+
+  width:100%;
+  height:100%;
+
+  display:block;
+
+  background:transparent;
+
+  border-radius:6px;
+
+  box-shadow:none;
+
+  border:none;
+
+  position:relative;
+}
+
+
+/* subtle notebook center fold */
+.page::after{
+  content:"";
+
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:50%;
+
+  width:3px;
+
+  background:
+    linear-gradient(
+      to right,
+      rgba(0,0,0,0.04),
+      rgba(0,0,0,0.02),
+      transparent
+    );
+
+}
+
+
+/* ============================================================
+   INNER CONTENT LAYOUT
+   ============================================================ */
+
+.page-inner{
+
+  display:flex;
+
+  gap:28px;
+
+  height:100%;
+
+  padding:42px;
+
+}
+
+
+/* portrait */
+
+.portrait{
+  width:42%;
+}
+
+.portrait img{
+
+  width:100%;
+
+  border-radius:8px;
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.28);
+
+}
+
+
+/* text area */
+
+.entry{
+  width:58%;
+}
+
+
+/* name */
+
+.name{
+
+  font-family:'Shadows Into Light', cursive;
+
+  font-size:42px;
+
+  margin:0;
+
+  color:#3a2a1c;
+
+}
+
+/* meta row containing status / tribe badges */
+.entry .meta{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px; /* keep a small vertical gap from the name */
+}
+
+
+/* status badge */
+
+.status{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  color:white;
+}
+
+.status.is-active{
+  background:#3ca55c;
+}
+
+.status.is-out{
+  background:#b93c3c;
+}
+
+/* tribe badge (matches status styling but uses tribe colors) */
+.entry .meta .tribe-tag{
+  display:inline-block;
+  margin-left:8px;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  color:white;
+  position:relative; /* ensure z-index works */
+  z-index:6;         /* bring above decorative elements */
+  vertical-align:middle;
+  border:1px solid rgba(0,0,0,0.06);
+}
+
+/* Example tribe colors — adjust to match branding */
+.tribe-cila{ background:#f18b2e; }  /* orange */
+.tribe-kalo{ background:#2fbfb3; }  /* teal */
+.tribe-vatu{ background:#b55ecf; }  /* purple */
+.tribe-other{ background:#6b6b6b; }
+
+/* Also match common tribe name variants via data-tribe attribute */
+.tribe-tag[data-tribe^="cila"]{ background:#f18b2e; }
+.tribe-tag[data-tribe^="kalo"]{ background:#2fbfb3; }
+.tribe-tag[data-tribe^="vatu"]{ background:#b55ecf; }
+.tribe-tag[data-tribe^="tribe"]{ background:#6b6b6b; }
+
+
+/* journal text */
+
+.bio-wrap{
+
+  /* spacing */
+  margin-top: 16px;
+  padding: 18px;
+
+  /* appearance */
+  border-radius: 10px;
+  background: rgba(0,0,0,0.05);
+
+  /* CRITICAL: define size */
+  height: 370px;          /* fixed height */
+  max-height: 370px;
+
+  width: 95%;            /* fill entry column */
+
+  /* enable scrolling */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* smoother scrolling */
+  scroll-behavior: smooth;
+}
+
+
+
+/* footer */
+
+.footer-note{
+
+  position:absolute;
+
+  bottom:16px;
+
+  left:42px;
+
+  right:42px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  font-size:12px;
+
+  opacity:0.6;
+
+}
+
+
+/* ============================================================
+   NAV BUTTONS
+   ============================================================ */
+
+.nav-btn{
+
+  position:absolute;
+
+  top:50%;
+
+  transform:translateY(-50%);
+
+  width:46px;
+  height:46px;
+
+  border-radius:50%;
+
+  border:none;
+
+  background:white;
+
+  box-shadow:0 8px 18px rgba(0,0,0,0.45);
+
+  cursor:pointer;
+
+  z-index:10;
+}
+
+.nav-btn--prev{
+  left:-24px;
+}
+
+.nav-btn--next{
+  right:-24px;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width:900px){
+
+  html, body{
+    overflow:auto;
+  }
+
+  .ct-overlay{
+    transform:none;
+    position:relative;
+    left:auto;
+    top:auto;
+  }
+
+  .book{
+    transform:scale(1);
+    width:95vw;
+    height:70vh;
+  }
+
+}

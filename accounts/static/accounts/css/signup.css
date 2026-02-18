@@ -44,7 +44,7 @@ html, body{
   inset: 0;
 }
 
-/* ---- Use the SAME design knobs as login ---- */
+/* ---- Design knobs ---- */
 :root{
   --ui-scale: 1;
 
@@ -61,23 +61,31 @@ html, body{
   --sp-teal:  #18b8b0;
 }
 
-/* EXACT same container class name as login */
+/* ============================================================
+   FORM CONTAINER
+   ============================================================ */
+
 .login-ui{
   position: fixed;
   transform: translate(-50%, -50%);
-
   width: calc(var(--ui-width) * var(--ui-scale));
 
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: calc(var(--ui-gap) * var(--ui-scale));
 
   z-index: 10;
 }
 
-.login-ui .field{ position: relative; }
+.login-ui .field{
+  position: relative;
+}
 
-/* ---- Make Django's rendered inputs look exactly like login ---- */
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
 .signup-form input[type="text"],
 .signup-form input[type="password"]{
   width: 100%;
@@ -93,7 +101,9 @@ html, body{
 
   outline: none;
 
-  box-shadow: 0 12px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .signup-form input::placeholder{
@@ -129,16 +139,25 @@ html, body{
   color: rgba(255,255,255,.95);
 }
 
-/* Add right padding to password inputs so the eye doesn't overlap */
 .signup-form input[type="password"]{
   padding-right: calc(44px * var(--ui-scale));
 }
 
-/* ---- Button: EXACT same as login (.login-btn) ---- */
+/* ============================================================
+   BUTTONS — CENTERED + 1/3 WIDTH
+   ============================================================ */
+
 .login-btn{
-  width: 25%;
-  min-width: calc(120px * var(--ui-scale));
+  /* center under inputs */
+  width: calc(100% / 3);
+  min-width: 180px;
+  max-width: 260px;
   align-self: center;
+  margin-left: auto;
+  margin-right: auto;
+  transform: translateX(0px);  
+  position: static;
+  float: none;
 
   height: calc(var(--ui-btn-h) * var(--ui-scale));
 
@@ -150,7 +169,11 @@ html, body{
   border-radius: 999px;
   border: 1px solid rgba(246, 194, 91, 0.55);
 
-  background: linear-gradient(180deg, rgba(255,122,47,.96), rgba(246,194,91,.96));
+  background: linear-gradient(
+    180deg,
+    rgba(255,122,47,.96),
+    rgba(246,194,91,.96)
+  );
 
   color: rgba(26,12,6,.95);
   font-weight: 900;
@@ -163,8 +186,21 @@ html, body{
 
   cursor: pointer;
 
-  box-shadow: 0 16px 34px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.25);
-  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+  box-shadow:
+    0 16px 34px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.25);
+
+  transition:
+    transform .12s ease,
+    filter .12s ease,
+    box-shadow .12s ease;
+}
+
+.auth-actions{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(10px * var(--ui-scale));
 }
 
 .login-btn:hover{
@@ -175,11 +211,14 @@ html, body{
     inset 0 1px 0 rgba(255,255,255,.28);
 }
 
-.login-btn:active{ transform: scale(.97); }
+.login-btn:active{
+  transform: scale(.97);
+}
 
-.login-btn--secondary{ margin-top: 2px; }
+/* ============================================================
+   HEADINGS
+   ============================================================ */
 
-/* Title/subtitle inside the board */
 .auth-heading{
   text-align: center;
   margin-bottom: calc(6px * var(--ui-scale));
@@ -200,7 +239,10 @@ html, body{
   color: rgba(0, 0, 0, 0.78);
 }
 
-/* Django error lists */
+/* ============================================================
+   ERRORS
+   ============================================================ */
+
 .errorlist{
   margin: 6px 0 0;
   padding: 0;
@@ -210,9 +252,16 @@ html, body{
   text-align: center;
 }
 
-.errorlist li{ margin: 0; }
+.errorlist li{
+  margin: 0;
+}
 
-/* Mobile: allow scrolling if needed */
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
 @media (max-width: 720px){
-  html, body{ overflow: auto !important; }
+  html, body{
+    overflow: auto !important;
+  }
 }

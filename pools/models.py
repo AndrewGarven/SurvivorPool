@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.db.models import Q, F
 
+
 class Season(models.Model):
     """
     A Survivor season (e.g., 'Survivor 50').
@@ -11,29 +12,43 @@ class Season(models.Model):
     slug = models.SlugField(max_length=120, unique=True)   # "survivor-50"
     created_at = models.DateTimeField(auto_now_add=True)
 
+    sole_survivor = models.ForeignKey(
+        "pools.Contestant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="won_seasons",
+    )
+
     def save(self, *args, **kwargs):
         # Auto-fill slug from name if not provided
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-    sole_survivor = models.ForeignKey("pools.Contestant",
-                                      on_delete=models.SET_NULL,
-                                      null=True,
-                                      blank=True,
-                                      related_name="won_seasons")
-
     def __str__(self):
         return self.name
-    
-    
+
+
 class Contestant(models.Model):
     """
     A contestant in a given season.
     """
     season = models.ForeignKey(Season, on_delete=models.CASCADE, related_name="contestants")
     name = models.CharField(max_length=100)
-    active = models.BooleanField(default=True)  # useful if you want to hide/disable someone
+
+    tribe = models.CharField(max_length=100, blank=True)
+    bio = models.TextField(blank=True)
+
+    # Keep your existing "active" flag
+    active = models.BooleanField(default=True)
+
+    # Explicit eliminated flag (your template expects this)
+    eliminated = models.BooleanField(default=False)
+
+    # Photo stored under: media/cast/season-50/<filename>
+    photo = models.ImageField(upload_to="cast/season-50/", blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -41,7 +56,17 @@ class Contestant(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-    
+
+    @property
+    def photo_url(self):
+        """
+        Backwards-compatible: lets templates use {{ c.photo_url }}.
+        """
+        if self.photo and hasattr(self.photo, "url"):
+            return self.photo.url
+        return ""
+
+
 class Episode(models.Model):
     """
     One episode/week within a Season.
@@ -148,4 +173,3 @@ class Entry(models.Model):
 
     def __str__(self):
         return f"{self.user} in {self.pool}"
-

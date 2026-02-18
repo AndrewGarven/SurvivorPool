@@ -306,6 +306,29 @@ html, body{
   color: rgba(255, 244, 226, 0.94);
 }
 
+/* Elimination styling: strike-through with color to indicate type */
+.pick-value.is-eliminated{
+  text-decoration-line: line-through;
+  text-decoration-thickness: 2px;
+  /* ensure the strike doesn't inherit a weird color */
+  text-decoration-skip-ink: none;
+}
+
+/* First-out eliminated → green strike */
+.pick-value.is-first-out.is-eliminated{
+  text-decoration-color: #44c06a; /* green */
+}
+
+/* Winner eliminated → red strike */
+.pick-value.is-winner.is-eliminated{
+  text-decoration-color: #e04a4a; /* red */
+}
+
+/* Slightly dim the struck text to keep emphasis on remaining picks */
+.pick-value.is-eliminated{
+  opacity: 0.95;
+}
+
 .week-etched,
 .score-etched{
   display: inline-flex;

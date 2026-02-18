@@ -29,16 +29,17 @@
 
         <div class="auth-heading">
           <div class="auth-title">Create account</div>
-          <div class="auth-sub">Pick a username and password to join pools and make your picks.</div>
+          <div class="auth-sub">
+            Pick a username and password to join pools and make your picks.
+          </div>
         </div>
 
-        <div class="field username">
-          {# force class + placeholder while still using Django field #}
+        <div class="field">
           {{ form.username }}
           {{ form.username.errors }}
         </div>
 
-        <div class="field password">
+        <div class="field">
           {{ form.password1 }}
           <button
             type="button"
@@ -49,7 +50,7 @@
           {{ form.password1.errors }}
         </div>
 
-        <div class="field password">
+        <div class="field">
           {{ form.password2 }}
           <button
             type="button"
@@ -60,13 +61,17 @@
           {{ form.password2.errors }}
         </div>
 
+        <!-- PRIMARY BUTTON -->
         <button class="login-btn" type="submit">
           Create account
         </button>
 
-        <a class="login-btn login-btn--secondary" href="{% url 'login' %}">
-          Back to sign in
-        </a>
+        <!-- SECONDARY ACTIONS -->
+        <div class="auth-actions">
+          <a class="login-btn login-btn--secondary" href="{% url 'login' %}">
+            Back to sign in
+          </a>
+        </div>
 
       </div>
     </form>
@@ -86,11 +91,8 @@ function togglePassword(id){
   const ui = document.getElementById("signup-ui");
   if(!bg || !ui) return;
 
-  // Place the form in the center of the board/card area.
-  // Tweak these to taste (0..1 relative to the contained image rectangle).
   const UI_X = 0.50;
   const UI_Y = 0.47;
-
   const FALLBACK_BASE = 1536;
 
   function place(){

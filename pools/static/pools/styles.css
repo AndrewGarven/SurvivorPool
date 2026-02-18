@@ -40,6 +40,7 @@ html, body{
   justify-content: center;
   overflow: hidden;      
   background: #07121f;    
+}
 
 .login-stage{
   position: relative;
@@ -149,4 +150,93 @@ html, body{
   color: #fff;
   font-size: 14px;
   text-align: center;
+}
+
+/* ---------- Auth button (used in nav for logout) ---------- */
+.auth-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 194, 91, 0.55);
+
+  background: linear-gradient(180deg, rgba(255,122,47,.96), rgba(246,194,91,.96));
+
+  color: rgba(26,12,6,.95);
+  font-weight: 900;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  font-size: 13px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow: 0 16px 34px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.25);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+
+.auth-btn:hover{
+  filter: brightness(1.06) saturate(1.05);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.52),
+    0 0 0 4px rgba(24,184,176,.10),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.auth-btn:active{ transform: scale(.97); }
+
+/* Fixed-position variant so the button is visible above full-screen overlays
+   (e.g., leaderboard/dashboard which use fixed, full-viewport layouts) */
+.fixed-auth-form{
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 99999; /* very high so it sits above overlays */
+  transform: none; /* ensure JS left/top are not shifted */
+  pointer-events: auto;
+
+  /* Stack multiple auth buttons (logout + dashboard) */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end; /* right-align buttons so their right edges match */
+}
+
+/* Left-side catalog wrapper (single button, right now) */
+.fixed-left-catalog{
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 99999;
+  transform: none;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.auth-btn--fixed{
+  height: 40px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+
+/* Variant if you want specialized left button spacing or smaller size */
+.auth-btn--left{ }
+
+@media (max-width: 640px){
+  .fixed-left-catalog{ top:10px; left:10px }
+  .fixed-auth-form{ top:10px; right:10px }
+  .auth-btn--fixed{ height:34px; padding:0 12px; font-size:12px }
+}
+
+@media (max-width: 480px){
+  .fixed-auth-form{ top: 10px; right: 10px; }
+  .auth-btn--fixed{ height: 34px; padding: 0 10px; font-size: 12px; }
 }

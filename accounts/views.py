@@ -101,4 +101,9 @@ def dashboard(request):
         })
 
     seasons = [(season, items) for season, items in by_season.items()]
-    return render(request, "accounts/dashboard.html", {"seasons": seasons})
+
+    # Provide a `pool` context (first pool) so the base template can show pool-scoped controls
+    first_entry = my_entries.first()
+    pool_context = first_entry.pool if first_entry else None
+
+    return render(request, "accounts/dashboard.html", {"seasons": seasons, "pool": pool_context})

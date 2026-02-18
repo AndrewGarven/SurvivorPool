@@ -17,6 +17,29 @@
 <body class="{% block body_class %}{% endblock %}">
 
   {% if request.resolver_match.url_name != "login" %}
+
+    {% if user.is_authenticated %}
+
+      {# Left-side Catalog button (only on leaderboard or dashboard where `pool` exists) #}
+      {% if request.resolver_match.url_name == "leaderboard" or request.resolver_match.url_name == "dashboard" or request.resolver_match.url_name == "make_picks" or request.resolver_match.url_name == "join_pool" %}
+        {% if pool %}
+          <div class="fixed-left-catalog">
+            <a href="{% url 'contestants' pool.join_code %}" class="auth-btn auth-btn--fixed auth-btn--left" aria-label="Contestant Catalog">Catalog</a>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <div class="fixed-auth-form" style="margin:0;">
+        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">Logout</button>
+        </form>
+        {% if request.resolver_match.url_name == "leaderboard" or request.resolver_match.url_name == "contestants" %}
+          <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">Dashboard</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
     <div class="container">
 
       <div class="nav">
@@ -30,12 +53,7 @@
 
             <form method="post" action="{% url 'logout' %}" style="margin:0;">
               {% csrf_token %}
-              <button type="submit" style="padding:.35rem .75rem; border-radius:999px;
-                    border:1px solid rgba(255,255,255,0.12);
-                    background: transparent;
-                    color:#e8eefc; font-weight:600; cursor:pointer;">
-                Logout
-              </button>
+              <button type="submit" class="auth-btn" aria-label="Sign out">Logout</button>
             </form>
           {% else %}
             <a href="{% url 'login' %}" style="padding:.35rem .75rem; border-radius:999px;
@@ -54,6 +72,90 @@
   {% if request.resolver_match.url_name != "login" %}
     </div>
   {% endif %}
+
+  <script>
+  // Anchor the fixed auth & catalog buttons to the background image (prefer image rect), with clamping
+  (function(){
+    const rightWrap = document.querySelector('.fixed-auth-form');
+    const leftWrap = document.querySelector('.fixed-left-catalog');
+    if(!rightWrap && !leftWrap) return;
+
+    const allWraps = [rightWrap, leftWrap].filter(Boolean);
+
+    // smooth movement so the position change isn't jarring
+    allWraps.forEach(w => {
+      w.style.transition = 'left .16s ease, top .16s ease, opacity .18s ease';
+      w.style.opacity = 0; // start hidden and fade in after placed
+    });
+
+    function placeOne(wrap, anchor){
+      // various pages use different background class names; include picks and join so
+      // the auth/catalog buttons will anchor to the same image area as on other pages
+      const img = document.querySelector(
+        '.lb-bg, .dashboard-bg, .login-bg, .ct-bg, .picks-bg, .join-bg, .login-stage img, .login-stage .login-bg'
+      );
+      const container = img || document.querySelector('.ct-overlay, .lb-overlay, .dashboard-overlay, .login-ui');
+
+      if(!container){
+        // Default: anchor to viewport (left or right)
+        if(anchor === 'left'){
+          wrap.style.left = '14px'; wrap.style.right = 'auto'; wrap.style.top = '14px'; wrap.style.opacity = 1;
+        } else {
+          wrap.style.left = 'auto'; wrap.style.right = '14px'; wrap.style.top = '14px'; wrap.style.opacity = 1;
+        }
+        return;
+      }
+
+      let r = container.getBoundingClientRect();
+      if(container.tagName === 'IMG' && container.naturalWidth && container.naturalHeight){
+        const elW = r.width; const elH = r.height;
+        const imgAspect = container.naturalWidth / container.naturalHeight;
+        const elAspect = elW / elH;
+        let dispW, dispH;
+        if(imgAspect > elAspect){ dispW = elW; dispH = dispW / imgAspect; }
+        else { dispH = elH; dispW = dispH * imgAspect; }
+        const left0 = r.left + (elW - dispW) / 2;
+        const top0 = r.top + (elH - dispH) / 2;
+        r = { left: left0, right: left0 + dispW, top: top0, bottom: top0 + dispH, width: dispW, height: dispH };
+      }
+
+      const PAD = 14;
+      const w = wrap.offsetWidth || 120;
+      let left, top;
+      top = Math.round(r.top + PAD);
+      if(anchor === 'left'){
+        left = Math.round(r.left + PAD);
+        left = Math.max(6, Math.min(left, window.innerWidth - w - 6));
+        wrap.style.left = left + 'px';
+        wrap.style.right = 'auto';
+      } else {
+        left = Math.round(r.right - PAD - w);
+        left = Math.max(6, Math.min(left, window.innerWidth - w - 6));
+        wrap.style.left = left + 'px';
+        wrap.style.right = 'auto';
+      }
+
+      top = Math.max(6, Math.min(top, window.innerHeight - 6));
+      wrap.style.top = top + 'px';
+      wrap.style.opacity = 1;
+    }
+
+    function placeAll(){
+      if(rightWrap) placeOne(rightWrap, 'right');
+      if(leftWrap) placeOne(leftWrap, 'left');
+    }
+
+    let t = null;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(placeAll, 60); });
+    window.addEventListener('load', placeAll);
+    window.addEventListener('DOMContentLoaded', placeAll);
+
+    setTimeout(placeAll, 300);
+    setTimeout(placeAll, 900);
+
+    placeAll();
+  })();
+  </script>
 
 </body>
 </html>

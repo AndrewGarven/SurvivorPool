@@ -78,15 +78,15 @@
                   <div class="picks">
                     <div class="pick-line">
                       <span class="pick-label">First out</span>
-                      <span class="pick-value">{{ r.entry.first_out }}</span>
+                      <span class="pick-value {% if r.entry.first_out and r.first_out_eliminated %}is-eliminated is-first-out{% endif %}" {% if r.entry.first_out and r.first_out_eliminated %}title="Eliminated"{% endif %}>{{ r.entry.first_out }}</span>
                     </div>
                     <div class="pick-line">
                       <span class="pick-label">Winner 1</span>
-                      <span class="pick-value">{{ r.entry.winner_1 }}</span>
+                      <span class="pick-value {% if r.entry.winner_1 and r.winner_1_eliminated %}is-eliminated is-winner{% endif %}" {% if r.entry.winner_1 and r.winner_1_eliminated %}title="Eliminated"{% endif %}>{{ r.entry.winner_1 }}</span>
                     </div>
                     <div class="pick-line">
                       <span class="pick-label">Winner 2</span>
-                      <span class="pick-value">{{ r.entry.winner_2 }}</span>
+                      <span class="pick-value {% if r.entry.winner_2 and r.winner_2_eliminated %}is-eliminated is-winner{% endif %}" {% if r.entry.winner_2 and r.winner_2_eliminated %}title="Eliminated"{% endif %}>{{ r.entry.winner_2 }}</span>
                     </div>
                   </div>
                 </td>
