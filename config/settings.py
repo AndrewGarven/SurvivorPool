@@ -18,7 +18,7 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
     "localhost",
-    "web-production-12a5.up.railway.app"
+    ".up.railway.app"
 )
 
 SECRET_KEY = '_aas&zd@y#juhwlk#=7xd*xilz-#&5ogvtigmt&dj@1-n=^6r!'
