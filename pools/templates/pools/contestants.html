@@ -7,236 +7,129 @@
   <title>Contestant Catalog · Survivor Pool</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="{% static 'pools/css/contestants.css' %}">
   <link rel="stylesheet" href="{% static 'pools/styles.css' %}">
 </head>
 
 <body>
-  <main class="catalog-app" role="main" aria-labelledby="catalog-title">
-    <h1 id="catalog-title" class="sr-only">Contestant Catalog — Field Journal</h1>
+  <main class="catalog-app">
 
-    <!-- Contained background image -->
+    <!-- Background frame -->
     <img
       class="ct-bg"
       id="ctBg"
       src="{% static 'pools/img/contestant_frame.png' %}"
       alt=""
-      aria-hidden="true"
     >
 
-    <!-- Overlay locked to contained bg rect via JS -->
-    <section class="ct-overlay" id="ctOverlay" aria-label="Contestant pages">
+    <!-- Overlay -->
+    <section class="ct-overlay" id="ctOverlay">
       <div class="book-stage">
-        <div class="book-frame" id="bookFrame">
+        <div class="book-frame">
 
-          <!-- “paper tray” behind PageFlip so it feels embedded -->
-          <div class="book-shell" aria-hidden="true"></div>
+          <div class="book-shell"></div>
 
-          <div id="book" class="book" aria-label="Contestant flipbook">
+          <div id="book" class="book">
+
             {% for c in contestants %}
-              {% with slug=c.name|slugify %}
-                {% with photo_path='pools/cast/season-50/'|add:slug|add:'.jpg' %}
-                  {# ✅ bios now live under /bios/ #}
-                  {% with notes_path='pools/cast/season-50/bios/'|add:slug|add:'.txt' %}
-                    <article
-                      class="page"
-                      data-contestant-id="{{ c.pk }}"
-                      data-slug="{{ slug }}"
-                      data-photo-url="{% static photo_path %}"
-                      data-notes-url="{% static notes_path %}"
-                      aria-label="Contestant: {{ c.name }}"
+            <article class="page" data-contestant-id="{{ c.pk }}">
+
+              <div class="page-inner">
+
+                <!-- LEFT PAGE: PHOTO -->
+                <figure class="portrait">
+
+                  {% if c.photo %}
+                    <img
+                      src="{{ c.photo.url }}"
+                      alt="{{ c.name }}"
+                      loading="lazy"
                     >
-                      <div class="page-inner">
-                        <figure class="portrait">
+                  {% else %}
+                    <img
+                      src="{% static 'pools/img/portrait-placeholder.png' %}"
+                      alt="No portrait"
+                      loading="lazy"
+                    >
+                  {% endif %}
 
-                          {# Prefer DB-uploaded photo if present; otherwise use static cast photo #}
-                          {% if c.photo %}
-                            <img src="{{ c.photo.url }}" alt="{{ c.name }} portrait" loading="lazy">
-                          {% else %}
-                            <img
-                              src="{% static photo_path %}"
-                              alt="{{ c.name }} portrait"
-                              loading="lazy"
-                              {# ✅ FIXED QUOTING: use backslash-escaped quotes inside JS string #}
-                              onerror="this.onerror=null; this.src=&quot;{% static 'pools/img/portrait-placeholder.png' %}&quot;;"
-                            >
-                          {% endif %}
+                </figure>
 
-                        </figure>
 
-                        <div class="entry">
-                          <h2 class="name">{{ c.name }}</h2>
+                <!-- RIGHT PAGE: ENTRY -->
+                <div class="entry">
 
-                          <div class="meta">
-                            <span class="status {% if c.is_eliminated %}is-out{% else %}is-active{% endif %}">
-                              {% if c.is_eliminated %}Eliminated{% else %}Active{% endif %}
-                            </span>
+                  <h2 class="name">
+                    {{ c.name }}
+                  </h2>
 
-                            {% if c.tribe %}
-                              <span class="tribe-tag tribe-{{ c.tribe|slugify }}" data-tribe="{{ c.tribe|lower }}">{{ c.tribe }}</span>
-                            {% endif %}
 
-                            <span class="meta-dot"></span>
-                            <span class="meta-small"></span>
-                          </div>
+                  <div class="meta">
 
-                          <!-- Notes area:
-                               - If DB notes exist, show them.
-                               - Otherwise JS will fetch the static .txt using data-notes-url. -->
-                          <div class="bio-wrap">
-                            {% if c.field_notes %}
-                              <div class="bio">{{ c.field_notes|linebreaksbr }}</div>
-                            {% else %}
-                              <div class="bio bio-placeholder" data-bio="1">Loading field notes…</div>
-                            {% endif %}
-                          </div>
+                    <span class="status {% if c.is_eliminated %}is-out{% else %}is-active{% endif %}">
+                      {% if c.is_eliminated %}
+                        Eliminated
+                      {% else %}
+                        Active
+                      {% endif %}
+                    </span>
 
-                        </div>
-                      </div>
-                    </article>
-                  {% endwith %}
-                {% endwith %}
-              {% endwith %}
-            {% empty %}
-              <article class="page page-empty" aria-label="Empty catalog page">
-                <div class="page-inner">
-                  <div class="empty-note">
-                    <h2>No cast yet</h2>
-                    <p>Once contestants are added their portraits will appear here.</p>
+
+                    {% if c.tribe %}
+                      <span class="tribe-tag tribe-{{ c.tribe|slugify }}">
+                        {{ c.tribe }}
+                      </span>
+                    {% endif %}
+
                   </div>
+
+
+                  <div class="bio-wrap">
+
+                    {% if c.field_notes %}
+                      <div class="bio">
+                        {{ c.field_notes|linebreaksbr }}
+                      </div>
+                    {% else %}
+                      <div class="bio bio-placeholder">
+                        No field notes yet.
+                      </div>
+                    {% endif %}
+
+                  </div>
+
                 </div>
-              </article>
+
+              </div>
+
+            </article>
             {% endfor %}
 
-            {% if contestants and not contestants|length|divisibleby:2 %}
-              <article class="page page-empty" aria-label="Blank page">
-                <div class="page-inner">
-                  <div class="empty-note">&nbsp;</div>
-                </div>
-              </article>
-            {% endif %}
           </div>
 
-          <button id="prevBtn" class="nav-btn nav-btn--prev" aria-label="Previous page">◀</button>
-          <button id="nextBtn" class="nav-btn nav-btn--next" aria-label="Next page">▶</button>
+
+          <button id="prevBtn" class="nav-btn nav-btn--prev">
+            ◀
+          </button>
+
+          <button id="nextBtn" class="nav-btn nav-btn--next">
+            ▶
+          </button>
+
 
         </div>
       </div>
-
-      <noscript class="no-js-note">
-        <strong>Interactive flipbook requires JavaScript.</strong>
-        <p>Please enable JavaScript to flip pages or browse the catalog.</p>
-      </noscript>
     </section>
+
+
   </main>
 
-  {% if user.is_authenticated %}
-    <div class="fixed-auth-form" style="margin:0;">
-      <form method="post" action="{% url 'logout' %}" style="margin:0;">
-        {% csrf_token %}
-        <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">Logout</button>
-      </form>
-      <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">Dashboard</a>
-      {% if can_pick_on_catalog %}
-        <a href="{% url 'make_picks' pool.join_code %}" class="auth-btn auth-btn--fixed" aria-label="Make picks">Make Picks</a>
-      {% endif %}
-    </div>
-  {% endif %}
 
-  <script>
-    window.CATALOG_PICK = {
-      canPick: {{ can_pick_on_catalog|default_if_none:"False"|yesno:"true,false" }},
-      joinCode: "{{ pool.join_code|default:''|escapejs }}"
-    };
-  </script>
+  <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js"></script>
 
-  <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js" defer></script>
-  <script src="{% static 'pools/js/contestants.js' %}" defer></script>
+  <script src="{% static 'pools/js/contestants.js' %}"></script>
 
-  <script>
-  // Placement script for fixed auth/catalog/buttons (adapted from base.html)
-  (function(){
-    const rightWrap = document.querySelector('.fixed-auth-form');
-    const leftWraps = Array.from(document.querySelectorAll('.fixed-left-catalog, .fixed-left-rules'));
-    if(!rightWrap && leftWraps.length === 0) return;
 
-    const allWraps = [rightWrap, ...leftWraps].filter(Boolean);
-
-    allWraps.forEach(w => {
-      w.style.transition = 'left .16s ease, top .16s ease, opacity .18s ease';
-      w.style.opacity = 0;
-    });
-
-    function placeOne(wrap, anchor){
-      const img = document.querySelector('.ct-bg, .lb-bg, .dashboard-bg, .login-bg, .login-stage img, .login-stage .login-bg');
-      const container = img || document.querySelector('.ct-overlay, .lb-overlay, .dashboard-overlay, .login-ui');
-
-      if(!container){
-        if(anchor === 'left'){
-          wrap.style.left = '14px'; wrap.style.right = 'auto'; wrap.style.top = '14px'; wrap.style.opacity = 1;
-        } else {
-          wrap.style.left = 'auto'; wrap.style.right = '14px'; wrap.style.top = '14px'; wrap.style.opacity = 1;
-        }
-        return 14;
-      }
-
-      let r = container.getBoundingClientRect();
-      if(container.tagName === 'IMG' && container.naturalWidth && container.naturalHeight){
-        const elW = r.width; const elH = r.height;
-        const imgAspect = container.naturalWidth / container.naturalHeight;
-        const elAspect = elW / elH;
-        let dispW, dispH;
-        if(imgAspect > elAspect){ dispW = elW; dispH = dispW / imgAspect; }
-        else { dispH = elH; dispW = dispH * imgAspect; }
-        const left0 = r.left + (elW - dispW) / 2;
-        const top0 = r.top + (elH - dispH) / 2;
-        r = { left: left0, right: left0 + dispW, top: top0, bottom: top0 + dispH, width: dispW, height: dispH };
-      }
-
-      const PAD = 14;
-      const w = wrap.offsetWidth || 120;
-      let left, top;
-      top = Math.round(r.top + PAD);
-      if(anchor === 'left'){
-        left = Math.round(r.left + PAD);
-        left = Math.max(6, Math.min(left, window.innerWidth - w - 6));
-        wrap.style.left = left + 'px';
-        wrap.style.right = 'auto';
-      } else {
-        left = Math.round(r.right - PAD - w);
-        left = Math.max(6, Math.min(left, window.innerWidth - w - 6));
-        wrap.style.left = left + 'px';
-        wrap.style.right = 'auto';
-      }
-
-      top = Math.max(6, Math.min(top, window.innerHeight - 6));
-      wrap.style.top = top + 'px';
-      wrap.style.opacity = 1;
-      return top;
-    }
-
-    function placeAll(){
-      if(rightWrap) placeOne(rightWrap, 'right');
-      leftWraps.forEach((w,i) => {
-        const baseTop = placeOne(w, 'left');
-        if(i > 0){
-          const gap = 8;
-          const extra = i * (w.offsetHeight + gap);
-          w.style.top = (baseTop + extra) + 'px';
-        }
-      });
-    }
-
-    let t = null;
-    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(placeAll, 60); });
-    window.addEventListener('load', placeAll);
-    window.addEventListener('DOMContentLoaded', placeAll);
-
-    setTimeout(placeAll, 300);
-    setTimeout(placeAll, 900);
-
-    placeAll();
-  })();
-  </script>
 </body>
 </html>
