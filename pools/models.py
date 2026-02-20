@@ -99,6 +99,21 @@ class Pool(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     season = models.ForeignKey(Season, on_delete=models.CASCADE, related_name="pools")
 
+    # --- First Out lottery / draft ---
+    # When True, the "first out" selection is currently underway
+    first_out_draft_open = models.BooleanField(default=False)
+    # When True, draft order has been generated and stored on Entry.first_out_pick_order
+    first_out_draft_generated = models.BooleanField(default=False)
+
+    # Winner of last year's pool gets to pick First Out first (if they are in this pool)
+    previous_winner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="previous_pool_winner_for",
+    )
+
     def __str__(self):
         return self.name
 
@@ -142,6 +157,12 @@ class Entry(models.Model):
         related_name="winner2_entries",
     )
 
+    # --- First Out draft position ---
+    # Determined by lottery (previous winner gets #1), then randomized for others
+    first_out_pick_order = models.PositiveIntegerField(null=True, blank=True)
+    # Timestamp when the user successfully locked their first_out pick (optional but useful)
+    first_out_picked_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         constraints = [
             # One entry per user per pool
@@ -152,6 +173,13 @@ class Entry(models.Model):
                 fields=["pool", "first_out"],
                 condition=Q(first_out__isnull=False),
                 name="uniq_first_out_per_pool",
+            ),
+
+            # Unique draft order per pool (ignore nulls)
+            models.UniqueConstraint(
+                fields=["pool", "first_out_pick_order"],
+                condition=Q(first_out_pick_order__isnull=False),
+                name="uniq_first_out_order_per_pool",
             ),
 
             # Winner picks must be distinct (when both set)

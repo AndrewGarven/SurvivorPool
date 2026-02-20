@@ -9,4 +9,7 @@ urlpatterns = [
     # Contestant catalog (flipbook) for a pool's season
     path("pools/<str:join_code>/contestants/", views.contestants, name="contestants"),
     path("pools/<str:join_code>/catalog-pick/", views.catalog_pick, name="catalog_pick"),
+
+    # static informational pages
+    path("rules/", views.rules, name="rules"),
 ]

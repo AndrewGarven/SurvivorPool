@@ -208,9 +208,9 @@ html, body{
 }
 
 /* Left-side catalog wrapper (single button, right now) */
-.fixed-left-catalog{
+.fixed-left-catalog,
+.fixed-left-rules {
   position: fixed;
-  top: 14px;
   left: 14px;
   z-index: 99999;
   transform: none;
@@ -220,6 +220,11 @@ html, body{
   gap: 8px;
   align-items: flex-start;
 }
+
+/* rules button should sit below catalog if both are present; when catalog
+   is absent it simply uses the top offset on its own */
+.fixed-left-catalog { top: 14px; }
+.fixed-left-rules { top: 64px; }
 
 .auth-btn--fixed{
   height: 40px;
@@ -232,11 +237,15 @@ html, body{
 
 @media (max-width: 640px){
   .fixed-left-catalog{ top:10px; left:10px }
+  .fixed-left-rules{ top:50px; left:10px }
+  .fixed-auth_form{ top:10px; right:10px }
   .fixed-auth-form{ top:10px; right:10px }
   .auth-btn--fixed{ height:34px; padding:0 12px; font-size:12px }
 }
 
 @media (max-width: 480px){
+  .fixed-left-catalog{ top:10px; left:10px }
+  .fixed-left-rules{ top:50px; left:10px }
   .fixed-auth-form{ top: 10px; right: 10px; }
   .auth-btn--fixed{ height: 34px; padding: 0 10px; font-size: 12px; }
 }

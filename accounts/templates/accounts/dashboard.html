@@ -18,7 +18,7 @@
     alt="Dashboard background"
   >
 
-  <!-- Cards overlay (positioned by JS relative to the CONTAINED image rect) -->
+  <!-- Cards overlay -->
   <div class="dashboard-overlay" id="dashboard-overlay">
 
     {% if seasons %}
@@ -39,8 +39,10 @@
                      alt="">
             {% endif %}
 
+              <!-- Pool name -->
               <div class="pool-name">{{ item.pool.name }}</div>
 
+              <!-- Rank badge -->
               <div class="pool-meta">
                 {% if item.rank %}
                   <span class="pool-rank
@@ -57,6 +59,72 @@
                     Rank — / {{ item.total_players }}
                   </span>
                 {% endif %}
+              </div>
+
+              <!-- ===========================
+                   FIRST OUT DRAFT STATUS
+                   =========================== -->
+              <div class="draft-meta">
+
+                {% if item.draft_generated %}
+
+                  <div class="draft-line">
+                    <span class="draft-label">First Out Order</span>
+
+                    {% if item.my_pick_order %}
+                      <span class="draft-pill">
+                        #{{ item.my_pick_order }}
+                      </span>
+                    {% else %}
+                      <span class="draft-pill draft-pill--muted">
+                        —
+                      </span>
+                    {% endif %}
+
+                    {% if item.pool.previous_winner_id == user.id %}
+                      <span class="draft-pill draft-pill--champ">
+                        🏆 Champion Priority
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  {% if item.draft_open %}
+                    <div class="draft-line">
+                      <span class="draft-label">Up Now</span>
+
+                      {% if item.turn_user %}
+                        <span class="draft-pill {% if item.is_my_turn %}draft-pill--turn{% endif %}">
+                          {{ item.turn_user.username }}
+                          {% if item.is_my_turn %}
+                            — Your turn
+                          {% endif %}
+                        </span>
+                      {% else %}
+                        <span class="draft-pill draft-pill--muted">
+                          Complete
+                        </span>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    <div class="draft-line">
+                      <span class="draft-label">Draft</span>
+                      <span class="draft-pill draft-pill--muted">
+                        Closed
+                      </span>
+                    </div>
+                  {% endif %}
+
+                {% else %}
+
+                  <div class="draft-line">
+                    <span class="draft-label">First Out Draft</span>
+                    <span class="draft-pill draft-pill--muted">
+                      Lottery not run yet
+                    </span>
+                  </div>
+
+                {% endif %}
+
               </div>
 
               <!-- Picks -->
@@ -102,11 +170,6 @@
 
               </div>
 
-              <div class="pool-code">
-                Join code:
-                <strong>{{ item.pool.join_code|default:"(missing)" }}</strong>
-              </div>
-
               <div class="pool-cta">Open leaderboard →</div>
 
             {% if item.pool.join_code %}
@@ -118,7 +181,9 @@
           {% endfor %}
         </div>
       {% endfor %}
+
     {% else %}
+
       <div class="empty-state">
         <div class="empty-title">You aren’t in any pools yet.</div>
 
@@ -126,6 +191,7 @@
           Join a pool
         </a>
       </div>
+
     {% endif %}
   </div>
 </div>
@@ -136,26 +202,17 @@
   const overlay = document.getElementById("dashboard-overlay");
   if(!bg || !overlay) return;
 
-  // Where the CARD GROUP should sit on the CONTAINED image (0..1)
-  // (Centered, slightly above mid usually feels best)
   const OVR_X = 0.50;
   const OVR_Y = 0.52;
-
-  // Fallback if naturalWidth isn't available yet
   const FALLBACK_BASE = 1536;
 
   function place(){
     const r = bg.getBoundingClientRect();
     if(r.width <= 0 || r.height <= 0) return;
 
-    // Position overlay relative to the rendered "contain" rectangle
-    const left = r.left + r.width * OVR_X;
-    const top  = r.top  + r.height * OVR_Y;
+    overlay.style.left = `${r.left + r.width * OVR_X}px`;
+    overlay.style.top  = `${r.top  + r.height * OVR_Y}px`;
 
-    overlay.style.left = `${left}px`;
-    overlay.style.top  = `${top}px`;
-
-    // Scale based on how wide the image is rendered vs its natural width
     const base = bg.naturalWidth || FALLBACK_BASE;
     const s = r.width / base;
     const clamped = Math.max(0.70, Math.min(1.20, s));
@@ -165,14 +222,10 @@
   if(bg.complete) place();
   bg.addEventListener("load", place);
 
-  let t = null;
-  window.addEventListener("resize", () => {
-    clearTimeout(t);
-    t = setTimeout(place, 50);
-  });
-
+  window.addEventListener("resize", place);
   window.addEventListener("DOMContentLoaded", place);
   window.addEventListener("load", place);
 })();
 </script>
+
 {% endblock %}

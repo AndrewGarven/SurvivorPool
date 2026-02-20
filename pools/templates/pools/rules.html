@@ -1,0 +1,106 @@
+{% extends "pools/base.html" %}
+{% load static %}
+
+{% block title %}Rules - Survivor Pool{% endblock %}
+{% block body_class %}rules-body{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static 'pools/css/rules.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="rules-wrap">
+
+  <!-- Background frame (also used as the anchor for your fixed buttons) -->
+  <img class="dashboard-bg rules-bg"
+       src="{% static 'pools/img/rules_frame.png' %}"
+       alt="Rules frame" />
+
+  <!-- Plaque panel (positioned over the blank sign area) -->
+  <section class="rules-panel" aria-label="Survivor Pool Rules">
+    <header class="rules-header">
+      <div class="rules-kicker">SURVIVOR POOL</div>
+      <h1 class="rules-title">Official Rules</h1>
+      <div class="rules-divider" aria-hidden="true"></div>
+    </header>
+
+    <div class="rules-scroll" role="region" aria-label="Rules text">
+      <h2>Game Concept</h2>
+      <p>
+        Each player makes <strong>three preseason picks</strong>:
+        <strong>two Winner Picks</strong> and <strong>one First Out Pick</strong>.
+        Your score changes every week based on whether those contestants are still in the game.
+      </p>
+
+      <h2>Your Picks</h2>
+      <ul>
+        <li><strong>Winner Picks (2):</strong> Any players may choose the same Winner Picks.</li>
+        <li><strong>First Out Pick (1):</strong> Must be <strong>unique</strong> across the pool — no duplicates.</li>
+      </ul>
+
+      <h2>First Out Selection Order</h2>
+
+      <div class="ceremony">
+        <div class="ceremony-title">
+          <span class="icon" aria-hidden="true">🏝️</span>
+          The First-Out Draft Ceremony
+        </div>
+
+        <p class="ceremony-line champ">
+          <span class="badge" aria-hidden="true">🏆</span>
+          <strong>Last year’s pool winner picks first</strong> — champion’s privilege.
+        </p>
+
+        <p class="ceremony-line">
+          After the champion selects, all remaining First Out draft positions are determined by a
+          <strong>random lottery</strong>.
+        </p>
+
+        <p class="ceremony-line">
+          Once a contestant is chosen as a First Out Pick, they are <strong>locked</strong> and cannot be chosen
+          by anyone else.
+        </p>
+
+        <p class="ceremony-note">
+          This keeps First Out picks fair, unique, and appropriately brutal.
+        </p>
+      </div>
+
+      <h2>Weekly Scoring</h2>
+      <p class="callout">
+        <strong>+2 points</strong> per week for <strong>each</strong> Winner Pick that is still in the game
+        (<strong>+4 total</strong> if both are still in).
+      </p>
+      <p class="callout negative">
+        <strong>−1 point</strong> per week while your First Out Pick is still in the game.
+        Once they’re eliminated, the negative scoring stops.
+      </p>
+
+      <h2>Sole Survivor Bonus</h2>
+      <p class="callout bonus">
+        If <strong>either</strong> of your Winner Picks becomes the <strong>Sole Survivor</strong>,
+        you earn an additional <strong>+14 bonus points</strong> (awarded once at the end of the season).
+      </p>
+
+      <h2>Example</h2>
+      <p class="example">
+        You pick <strong>A</strong> and <strong>B</strong> as winners, and <strong>C</strong> as First Out.
+        If all three are still in after Week 1:
+        you earn <strong>+2</strong> (A) + <strong>+2</strong> (B) − <strong>1</strong> (C) = <strong>+3</strong>.
+      </p>
+
+      <div class="rules-divider small" aria-hidden="true"></div>
+
+      <p class="footer-note">
+        Outwit. Outplay. Outlast. Then check the leaderboard.
+      </p>
+    </div>
+
+    <div class="scroll-hint" aria-hidden="true">
+      <span>Scroll</span>
+      <span class="chev">⌄</span>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

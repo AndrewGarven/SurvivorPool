@@ -13,7 +13,6 @@
   {% block page_css %}{% endblock %}
 </head>
 
-
 <body class="{% block body_class %}{% endblock %}">
 
   {% if request.resolver_match.url_name != "login" %}
@@ -29,13 +28,27 @@
         {% endif %}
       {% endif %}
 
+      {# Rules button: visible on all pages except login, join_pool, or rules itself #}
+      {% if request.resolver_match.url_name != "login" and request.resolver_match.url_name != "join_pool" and request.resolver_match.url_name != "rules" %}
+        <div class="fixed-left-rules">
+          <a href="{% url 'rules' %}" class="auth-btn auth-btn--fixed auth-btn--left" aria-label="Rules">Rules</a>
+        </div>
+      {% endif %}
+
       <div class="fixed-auth-form" style="margin:0;">
         <form method="post" action="{% url 'logout' %}" style="margin:0;">
           {% csrf_token %}
           <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">Logout</button>
         </form>
-        {% if request.resolver_match.url_name == "leaderboard" or request.resolver_match.url_name == "contestants" %}
+
+        {# show dashboard link on leaderboard, contestants, and rules pages #}
+        {% if request.resolver_match.url_name == "leaderboard" or request.resolver_match.url_name == "contestants" or request.resolver_match.url_name == "rules" %}
           <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">Dashboard</a>
+        {% endif %}
+
+        {# Make Picks appears until the user has made picks #}
+        {% if pool and can_make_picks|default:False %}
+          <a href="{% url 'make_picks' pool.join_code %}" class="auth-btn auth-btn--fixed" aria-label="Make picks">Make Picks</a>
         {% endif %}
       </div>
     {% endif %}
@@ -55,6 +68,7 @@
               {% csrf_token %}
               <button type="submit" class="auth-btn" aria-label="Sign out">Logout</button>
             </form>
+
           {% else %}
             <a href="{% url 'login' %}" style="padding:.35rem .75rem; border-radius:999px;
                   border:1px solid rgba(255,255,255,0.12);
@@ -77,10 +91,11 @@
   // Anchor the fixed auth & catalog buttons to the background image (prefer image rect), with clamping
   (function(){
     const rightWrap = document.querySelector('.fixed-auth-form');
-    const leftWrap = document.querySelector('.fixed-left-catalog');
-    if(!rightWrap && !leftWrap) return;
+    // select both catalog and rules containers, they share anchoring logic
+    const leftWraps = Array.from(document.querySelectorAll('.fixed-left-catalog, .fixed-left-rules'));
+    if(!rightWrap && leftWraps.length === 0) return;
 
-    const allWraps = [rightWrap, leftWrap].filter(Boolean);
+    const allWraps = [rightWrap, ...leftWraps].filter(Boolean);
 
     // smooth movement so the position change isn't jarring
     allWraps.forEach(w => {
@@ -103,7 +118,7 @@
         } else {
           wrap.style.left = 'auto'; wrap.style.right = '14px'; wrap.style.top = '14px'; wrap.style.opacity = 1;
         }
-        return;
+        return Math.round(14); // return top used
       }
 
       let r = container.getBoundingClientRect();
@@ -138,11 +153,20 @@
       top = Math.max(6, Math.min(top, window.innerHeight - 6));
       wrap.style.top = top + 'px';
       wrap.style.opacity = 1;
+      return top;
     }
 
     function placeAll(){
       if(rightWrap) placeOne(rightWrap, 'right');
-      if(leftWrap) placeOne(leftWrap, 'left');
+      leftWraps.forEach((w,i) => {
+        const baseTop = placeOne(w, 'left');
+        if(i > 0){
+          // stack subsequent buttons below the first, spacing by 8px
+          const gap = 8;
+          const extra = i * (w.offsetHeight + gap);
+          w.style.top = (baseTop + extra) + 'px';
+        }
+      });
     }
 
     let t = null;

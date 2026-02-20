@@ -7,17 +7,18 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.db.models import Exists, OuterRef
-
+from django.http import HttpResponseForbidden
 from .models import Pool, Entry, Episode, Contestant
 from django.http import JsonResponse, HttpResponseBadRequest
 from .services.scoring import build_cumulative_eliminations, calculate_total_points
 from .forms import JoinPoolForm, EntryPicksForm
-
-
+from .services_first_out import generate_first_out_lottery
+from .decorators import require_picks
 # ============================================================
 # LEADERBOARD (DO NOT REMOVE — ROUTED FROM pools/urls.py)
 # ============================================================
 
+@require_picks
 @login_required
 def leaderboard(request, join_code: str):
     pool = get_object_or_404(Pool, join_code=join_code)
@@ -198,6 +199,34 @@ def catalog_pick(request, join_code: str):
 
 @login_required
 def dashboard(request):
+    """
+    Global dashboard at /dashboard/.
+    If the user has ANY Entry with incomplete required picks, redirect them to
+    that pool's picks page.
+    """
+
+    # ------------------------------------------------------------
+    # 1) Enforce picks completion (Option B)
+    # ------------------------------------------------------------
+    # Recommended for your setup: require winners only (first_out may be drafted later).
+    incomplete_entry = (
+        Entry.objects
+        .select_related("pool")
+        .filter(user=request.user)
+        .filter(Q(winner_1__isnull=True) | Q(winner_2__isnull=True))
+        .order_by("created_at")  # deterministic: oldest incomplete first
+        .first()
+    )
+
+    # If you DO want to require first_out immediately, use this instead:
+    # .filter(Q(winner_1__isnull=True) | Q(winner_2__isnull=True) | Q(first_out__isnull=True))
+
+    if incomplete_entry:
+        return redirect("make_picks", join_code=incomplete_entry.pool.join_code)
+
+    # ------------------------------------------------------------
+    # 2) Normal dashboard logic (unchanged, just no join_code param)
+    # ------------------------------------------------------------
     entries = (
         Entry.objects
         .filter(user=request.user)
@@ -227,7 +256,7 @@ def dashboard(request):
                 "score": bd.total,
             })
 
-        rows.sort(key=lambda r: (-r["score"], r["user_id"]))  # stable ordering, ranking still by score only
+        rows.sort(key=lambda r: (-r["score"], r["user_id"]))
 
         rank = None
         prev_score = None
@@ -260,6 +289,11 @@ def dashboard(request):
         "accounts/dashboard.html",
         {"seasons": seasons},
     )
+
+def rules(request):
+    """Placeholder rules page; currently just displays static text."""
+    # for now we don't need any special context - could add season/pool if desired
+    return render(request, "pools/rules.html")
 
 
 @login_required
@@ -294,37 +328,155 @@ def join_pool(request):
 
 
 @login_required
+def rules(request):
+    """Placeholder rules page; currently just displays static text."""
+    # no special context yet
+    return render(request, "pools/rules.html")
+
+
+@login_required
 def make_picks(request, join_code):
+
     pool = get_object_or_404(Pool, join_code=join_code)
 
-    # get or create the user's entry for this pool
     entry, _ = Entry.objects.get_or_create(pool=pool, user=request.user)
 
+    # -----------------------------------
+    # Determine draft state
+    # -----------------------------------
+
+    draft_generated = pool.first_out_draft_generated
+    draft_open = pool.first_out_draft_open
+
+    turn_entry = None
+    is_my_turn = False
+
+    if draft_generated and draft_open:
+
+        turn_entry = (
+            Entry.objects
+            .filter(pool=pool, first_out__isnull=True)
+            .order_by("first_out_pick_order", "created_at")
+            .select_related("user")
+            .first()
+        )
+
+        if turn_entry and turn_entry.user_id == request.user.id:
+            is_my_turn = True
+
+    # -----------------------------------
+    # POST
+    # -----------------------------------
+
     if request.method == "POST":
-        # ✅ PASS pool=pool and season=pool.season
-        form = EntryPicksForm(request.POST, instance=entry, season=pool.season, pool=pool)
+
+        form = EntryPicksForm(
+            request.POST,
+            instance=entry,
+            season=pool.season,
+            pool=pool,
+        )
 
         if form.is_valid():
-            try:
-                # ✅ safety net for race conditions
-                with transaction.atomic():
-                    form.save()
-                return redirect("dashboard")
 
-            except IntegrityError:
-                # If someone took the same first_out milliseconds earlier
-                form.add_error(
-                    "first_out",
-                    "That First Out pick was just taken by someone else. Please choose another."
-                )
-        # if not valid, fall through and re-render same page with errors
+            # enforce First Out turn order
+            submitted_first_out = form.cleaned_data.get("first_out")
+
+            if submitted_first_out:
+
+                # draft must exist
+                if not draft_generated:
+                    form.add_error(
+                        "first_out",
+                        "First Out draft has not been generated yet."
+                    )
+
+                # draft must be open
+                elif not draft_open:
+                    form.add_error(
+                        "first_out",
+                        "First Out draft is closed."
+                    )
+
+                # must be user's turn
+                elif not is_my_turn:
+                    if turn_entry:
+                        form.add_error(
+                            "first_out",
+                            f"It is currently {turn_entry.user.username}'s turn to select First Out."
+                        )
+                    else:
+                        form.add_error(
+                            "first_out",
+                            "First Out draft is complete."
+                        )
+
+                # prevent editing after locking
+                elif entry.first_out_id and entry.first_out_id != submitted_first_out.id:
+                    form.add_error(
+                        "first_out",
+                        "Your First Out pick is already locked."
+                    )
+
+            # only save if no errors added above
+            if not form.errors:
+
+                try:
+                    with transaction.atomic():
+
+                        saved_entry = form.save()
+
+                        # mark timestamp when first_out locked
+                        if submitted_first_out and not entry.first_out_picked_at:
+
+                            saved_entry.first_out_picked_at = timezone.now()
+                            saved_entry.save(update_fields=["first_out_picked_at"])
+
+                    return redirect("dashboard")
+
+                except IntegrityError:
+
+                    form.add_error(
+                        "first_out",
+                        "That First Out pick was just taken by someone else."
+                    )
+
+    # -----------------------------------
+    # GET
+    # -----------------------------------
 
     else:
-        # GET request
-        form = EntryPicksForm(instance=entry, season=pool.season, pool=pool)
+
+        form = EntryPicksForm(
+            instance=entry,
+            season=pool.season,
+            pool=pool,
+        )
+
+    # -----------------------------------
+    # Render
+    # -----------------------------------
 
     return render(request, "pools/make_picks.html", {
         "pool": pool,
         "form": form,
         "entry": entry,
+
+        # useful for template UI
+        "draft_generated": draft_generated,
+        "draft_open": draft_open,
+        "turn_user": turn_entry.user if turn_entry else None,
+        "is_my_turn": is_my_turn,
+        "my_order": entry.first_out_pick_order,
     })
+
+@login_required
+def run_first_out_lottery(request, join_code):
+    pool = get_object_or_404(Pool, join_code=join_code)
+
+    # Replace this with your own "is commissioner" logic
+    if not request.user.is_staff:
+        return HttpResponseForbidden("Only the commissioner can run the lottery.")
+
+    generate_first_out_lottery(pool)
+    return redirect("dashboard")

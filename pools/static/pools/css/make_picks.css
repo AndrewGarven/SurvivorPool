@@ -1,6 +1,5 @@
 /* ============================================================
    POOLS: MAKE PICKS (UI LOCKED TO CONTAINED IMAGE)
-   File: pools/static/pools/css/make_picks.css
    ============================================================ */
 
 html, body{
@@ -60,10 +59,6 @@ html, body{
 
   --sp-gold:  #f6c25b;
   --sp-ember: #ff7a2f;
-  --sp-wood:  #2a140b;
-  --sp-wood2: #3a1c0f;
-  --sp-teal:  #18b8b0;
-  --sp-ink:   #0b0f12;
 }
 
 /* UI block positioned by JS */
@@ -77,7 +72,6 @@ html, body{
   flex-direction: column;
   gap: calc(var(--ui-gap) * var(--ui-scale));
 
-  /* dark text (your signup request style) */
   color: rgba(20, 12, 8, 0.92);
 }
 
@@ -89,41 +83,68 @@ html, body{
   text-align: center;
 
   font-size: calc(22px * var(--ui-scale));
-  color: rgba(20, 12, 8, 0.92);
 }
 
 .picks-sub{
   text-align: center;
   font-size: calc(14px * var(--ui-scale));
   line-height: 1.35;
-  color: rgba(20, 12, 8, 0.78);
 }
 
-/* Grid for fields */
-.picks-grid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(12px * var(--ui-scale));
-  margin-top: calc(2px * var(--ui-scale));
+/* =============================
+   COMPACT DRAFT BADGES
+   ============================= */
+
+.draft-badges{
+  display: flex;
+  justify-content: center;
+  gap: calc(8px * var(--ui-scale));
+  flex-wrap: wrap;
+
+  margin-top: calc(4px * var(--ui-scale));
+  margin-bottom: calc(2px * var(--ui-scale));
 }
 
-.picks-field--wide{
-  grid-column: 1 / -1;
-}
+.draft-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: calc(8px * var(--ui-scale));
 
-.picks-label{
+  padding: calc(5px * var(--ui-scale)) calc(10px * var(--ui-scale));
+  border-radius: 999px;
+
+  background: rgba(10, 8, 6, 0.50);
+  border: 1px solid rgba(255, 210, 150);
+
   font-size: calc(12px * var(--ui-scale));
-  font-weight: 950;
-  letter-spacing: 0.9px;
-  text-transform: uppercase;
-  color: rgba(20, 12, 8, 0.70);
-  margin-bottom: calc(6px * var(--ui-scale));
+  font-weight: 900;
+
+  color: rgba(255,244,226,0.96);
 }
 
-/* Controls wrapper */
-.picks-control{ position: relative; }
+.draft-badge__label{
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,226,190);
+}
 
-/* Style form inputs + selects to match your login look */
+.draft-badge__value{
+  font-weight: 950;
+}
+
+.draft-badge--muted{
+  opacity: 0.6;
+}
+
+.draft-badge--turn{
+  border-color: rgba(255,200,80,0.85);
+  box-shadow: 0 0 calc(12px * var(--ui-scale)) rgba(255,200,80,0.20);
+}
+
+/* =============================
+   INPUTS
+   ============================= */
+
 .picks-form input,
 .picks-form select{
   width: 100%;
@@ -137,62 +158,12 @@ html, body{
 
   padding: 0 calc(18px * var(--ui-scale));
   font-size: calc(var(--ui-font) * var(--ui-scale));
-
-  outline: none;
-  appearance: none;
 }
 
-/* Dropdown arrow (subtle) */
-.picks-form select{
-  padding-right: calc(44px * var(--ui-scale));
-  background-image:
-    linear-gradient(180deg, rgba(42,20,11,.82), rgba(18,9,6,.78)),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.18), rgba(255,255,255,0));
-  background-repeat: no-repeat;
-}
+/* =============================
+   BUTTONS
+   ============================= */
 
-/* Focus */
-.picks-form input:focus,
-.picks-form select:focus{
-  border-color: rgba(24, 184, 176, 0.75);
-  box-shadow: 0 0 0 4px rgba(24,184,176,.12);
-}
-
-/* Errors */
-.picks-error ul{
-  list-style: none;
-  margin: calc(6px * var(--ui-scale)) 0 0;
-  padding: 0;
-}
-
-.picks-error li{
-  font-size: calc(12px * var(--ui-scale));
-  color: rgba(160, 0, 0, 0.92);
-  font-weight: 800;
-}
-
-/* Django non-field errors */
-.errorlist{
-  position: fixed;
-  left: 50%;
-  top: 8%;
-  transform: translateX(-50%);
-  width: min(92vw, 640px);
-  margin: 0;
-  padding: 10px 14px;
-  list-style: none;
-
-  background: rgba(180, 20, 20, 0.92);
-  border-radius: 10px;
-  color: #fff;
-  font-size: 14px;
-  text-align: center;
-  z-index: 999;
-}
-
-.errorlist li{ margin: 0; padding: 0; }
-
-/* Buttons (match login) */
 .picks-btn{
   width: 30%;
   min-width: calc(150px * var(--ui-scale));
@@ -203,6 +174,7 @@ html, body{
   display: flex;
   align-items: center;
   justify-content: center;
+
   text-align: center;
 
   border-radius: 999px;
@@ -214,26 +186,24 @@ html, body{
   font-weight: 900;
   letter-spacing: .8px;
   text-transform: uppercase;
-  text-decoration: none;
 
   font-size: calc(13px * var(--ui-scale));
   line-height: 1;
 
   cursor: pointer;
 
-  box-shadow: 0 16px 34px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.25);
-  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
-}
-
-.picks-btn:hover{
-  filter: brightness(1.06) saturate(1.05);
   box-shadow:
-    0 18px 40px rgba(0,0,0,.52),
-    0 0 0 4px rgba(24,184,176,.10),
-    inset 0 1px 0 rgba(255,255,255,.28);
+    0 16px 34px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.25);
+
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+
+  /* CRITICAL FIXES */
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
 }
 
-.picks-btn:active{ transform: scale(.97); }
 
 .picks-btn--secondary{
   margin-top: calc(2px * var(--ui-scale));
@@ -243,5 +213,4 @@ html, body{
 @media (max-width: 720px){
   html, body{ overflow: auto !important; }
   .picks-ui{ position: absolute; }
-  .picks-grid{ grid-template-columns: 1fr; }
 }

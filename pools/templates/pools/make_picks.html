@@ -24,9 +24,57 @@
 
       <div class="picks-ui" id="picks-ui">
 
-        <div class="picks-title">Make your picks</div>
-        <div class="picks-sub">
-          Choose your winners and first elimination.
+        <!-- =============================
+             COMPACT FIRST OUT DRAFT INFO
+             ============================= -->
+        <div class="draft-badges" aria-label="First Out Draft Status">
+
+          {% if draft_generated %}
+
+            <span class="draft-badge">
+              <span class="draft-badge__label">Order</span>
+              <span class="draft-badge__value">
+                {% if my_order %}#{{ my_order }}{% else %}—{% endif %}
+              </span>
+            </span>
+
+            {% if draft_open %}
+              <span class="draft-badge {% if is_my_turn %}draft-badge--turn{% endif %}">
+                <span class="draft-badge__label">Up now</span>
+                <span class="draft-badge__value">
+                  {% if turn_user %}
+                    {% if turn_user == user %}
+                      You
+                    {% else %}
+                      {{ turn_user.username }}
+                    {% endif %}
+                  {% else %}
+                    Complete
+                  {% endif %}
+
+                  {% if is_my_turn %}
+                    — your turn
+                  {% endif %}
+                </span>
+              </span>
+            {% else %}
+
+              <span class="draft-badge draft-badge--muted">
+                <span class="draft-badge__label">Draft</span>
+                <span class="draft-badge__value">Closed</span>
+              </span>
+
+            {% endif %}
+
+          {% else %}
+
+            <span class="draft-badge draft-badge--muted">
+              <span class="draft-badge__label">First Out</span>
+              <span class="draft-badge__value">Lottery not run yet</span>
+            </span>
+
+          {% endif %}
+
         </div>
 
         <!-- WINNER 1 -->
@@ -90,4 +138,5 @@
   window.addEventListener("resize", place);
 })();
 </script>
+
 {% endblock %}

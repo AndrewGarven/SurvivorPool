@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Season, Pool, Entry, Contestant, Episode
-
+from .services_first_out import generate_first_out_lottery
 
 @admin.register(Pool)
 class PoolAdmin(admin.ModelAdmin):
@@ -50,3 +50,12 @@ class EpisodeAdmin(admin.ModelAdmin):
     search_fields = ("season__name",)
     ordering = ("season", "number")
     autocomplete_fields = ("season", "eliminated")
+
+@admin.action(description="Generate First Out lottery")
+def generate_first_out(modeladmin, request, queryset):
+    for pool in queryset:
+        generate_first_out_lottery(pool)
+
+@admin.register(Pool)
+class PoolAdmin(admin.ModelAdmin):
+    actions = [generate_first_out]

@@ -120,7 +120,7 @@
   <script>
     window.CATALOG_PICK = {
       // ensure undefined/null becomes false before the yesno filter
-      canPick: {{ can_pick_on_catalog|default_if_none:False|yesno:"true,false" }},
+      canPick: {{ can_pick_on_catalog|default_if_none:"False"|yesno:"true,false" }},
       // pool may be absent so default to empty string and escape for JS
       joinCode: "{{ pool.join_code|default:''|escapejs }}"
     };
@@ -128,13 +128,13 @@
   <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js" defer></script>
   <script src="{% static 'pools/js/contestants.js' %}" defer></script>
   <script>
-  // Placement script for fixed auth/catalog buttons (adapted from base.html)
+  // Placement script for fixed auth/catalog/buttons (adapted from base.html)
   (function(){
     const rightWrap = document.querySelector('.fixed-auth-form');
-    const leftWrap = document.querySelector('.fixed-left-catalog');
-    if(!rightWrap && !leftWrap) return;
+    const leftWraps = Array.from(document.querySelectorAll('.fixed-left-catalog, .fixed-left-rules'));
+    if(!rightWrap && leftWraps.length === 0) return;
 
-    const allWraps = [rightWrap, leftWrap].filter(Boolean);
+    const allWraps = [rightWrap, ...leftWraps].filter(Boolean);
 
     allWraps.forEach(w => {
       w.style.transition = 'left .16s ease, top .16s ease, opacity .18s ease';
@@ -151,7 +151,7 @@
         } else {
           wrap.style.left = 'auto'; wrap.style.right = '14px'; wrap.style.top = '14px'; wrap.style.opacity = 1;
         }
-        return;
+        return 14;
       }
 
       let r = container.getBoundingClientRect();
@@ -186,9 +186,20 @@
       top = Math.max(6, Math.min(top, window.innerHeight - 6));
       wrap.style.top = top + 'px';
       wrap.style.opacity = 1;
+      return top;
     }
 
-    function placeAll(){ if(rightWrap) placeOne(rightWrap, 'right'); if(leftWrap) placeOne(leftWrap, 'left'); }
+    function placeAll(){
+      if(rightWrap) placeOne(rightWrap, 'right');
+      leftWraps.forEach((w,i) => {
+        const baseTop = placeOne(w, 'left');
+        if(i > 0){
+          const gap = 8;
+          const extra = i * (w.offsetHeight + gap);
+          w.style.top = (baseTop + extra) + 'px';
+        }
+      });
+    }
 
     let t = null;
     window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(placeAll, 60); });
