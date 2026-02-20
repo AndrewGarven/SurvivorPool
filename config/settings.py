@@ -30,7 +30,7 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 # Allowed hosts
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,.up.railway.app"
+    "localhost,127.0.0.1,.up.railway.app,survivorpool.me,www.survivorpool.me"
 ).split(",")
 
 # Railway / proxy / CSRF support
