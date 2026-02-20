@@ -8,9 +8,16 @@ from django.contrib.auth import views as auth_views
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
+
+def root_redirect(request):
+    return redirect("/login", permanent=False)
+
 
 
 urlpatterns = [
+    path("", root_redirect),
+    
     path("admin/", admin.site.urls),
 
     # account-level routes (dashboard now lives here)
