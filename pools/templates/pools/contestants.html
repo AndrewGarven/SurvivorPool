@@ -123,7 +123,6 @@
       </div>
     </section>
 
-
   </main>
 
   {% if user.is_authenticated %}
@@ -140,21 +139,6 @@
       </a>
     </div>
   {% endif %}
- 
-  {% if user.is_authenticated %}
-  <div class="fixed-auth-form">
-    <form method="post" action="{% url 'logout' %}">
-      {% csrf_token %}
-      <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">
-        Logout
-      </button>
-    </form>
-
-    <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">
-      Dashboard
-    </a>
-  </div>
-{% endif %}
 
 <script>
 (function(){
@@ -229,9 +213,6 @@
 </script>
 
   <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js"></script>
-
   <script src="{% static 'pools/js/contestants.js' %}"></script>
-
-
 </body>
 </html>
