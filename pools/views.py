@@ -14,6 +14,7 @@ from .services.scoring import build_cumulative_eliminations, calculate_total_poi
 from .forms import JoinPoolForm, EntryPicksForm
 from .services_first_out import generate_first_out_lottery
 from .decorators import require_picks
+from django.utils import timezone
 # ============================================================
 # LEADERBOARD (DO NOT REMOVE — ROUTED FROM pools/urls.py)
 # ============================================================
