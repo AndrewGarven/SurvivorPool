@@ -28,10 +28,13 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 # Allowed hosts
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,.up.railway.app,survivorpool.me,www.survivorpool.me"
-).split(",")
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1,.up.railway.app,survivorpool.me,www.survivorpool.me"
+    ).split(",")
+    if h.strip()
+]
 
 # Railway / proxy / CSRF support
 CSRF_TRUSTED_ORIGINS = [
@@ -39,7 +42,13 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.survivorpool.me",
     "https://*.up.railway.app",
 ]
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 
 # ============================================================
