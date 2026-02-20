@@ -42,7 +42,7 @@
 
                   {% if c.photo %}
                     <img
-                      src="{{ c.photo.url }}"
+                      src="{% static 'pools/cast/season-50/' %}{{ c.photo.name|cut:'cast/season-50/' }}"
                       alt="{{ c.name }}"
                       loading="lazy"
                     >
@@ -87,9 +87,9 @@
 
                   <div class="bio-wrap">
 
-                    {% if c.field_notes %}
-                      <div class="bio">
-                        {{ c.field_notes|linebreaksbr }}
+                    {% if c.photo %}
+                      <div class="bio"
+                           data-bio-url="{% static 'pools/cast/season-50/bios/' %}{{ c.photo.name|cut:'cast/season-50/'|cut:'.jpg' }}.txt">
                       </div>
                     {% else %}
                       <div class="bio bio-placeholder">
