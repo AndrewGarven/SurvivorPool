@@ -57,25 +57,43 @@
   // Load field notes from static .txt
   // ----------------------------
   async function hydrateFieldNotes(BookEl) {
-    const bios = BookEl.querySelectorAll('.bio[data-bio-url]');
+    const bios = BookEl.querySelectorAll('.bio[data-bio-url], .bio.bio-placeholder');
   
     for (const bioDiv of bios) {
-      // Only hydrate if it's currently a placeholder (optional but nice)
+      // Only hydrate placeholders
       const isPlaceholder = bioDiv.classList.contains("bio-placeholder") || !bioDiv.textContent.trim();
       if (!isPlaceholder) continue;
-  
-      const url = bioDiv.getAttribute("data-bio-url");
+    
+      // 1) Prefer explicit data-bio-url if present
+      let url = bioDiv.getAttribute("data-bio-url");
+    
+      // 2) Otherwise infer from the portrait image filename (MOST robust)
+      if (!url) {
+        const page = bioDiv.closest(".page");
+        const img = page ? page.querySelector(".portrait img") : null;
+        const src = img ? img.getAttribute("src") : "";
+      
+        // Expect: /static/pools/cast/season-50/<filename>.(jpg/png/...)
+        // Turn into: /static/pools/cast/season-50/bios/<filename>.txt
+        if (src && src.includes("/pools/cast/season-50/")) {
+          url = src
+            .replace("/pools/cast/season-50/", "/pools/cast/season-50/bios/")
+            .replace(/\.(jpe?g|png|webp)$/i, ".txt");
+        }
+      }
+    
       if (!url) {
         bioDiv.textContent = "No field notes yet.";
         bioDiv.classList.add("bio-placeholder");
         continue;
       }
-  
+    
       try {
-        const res = await fetch(url, { cache: "no-cache" });
+        // Important: encodeURI preserves slashes but safely encodes quotes etc.
+        const res = await fetch(encodeURI(url), { cache: "no-cache" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
         const txt = (await res.text()).trim();
-  
         if (txt.length) {
           bioDiv.classList.remove("bio-placeholder");
           bioDiv.innerHTML = txt.replace(/\n/g, "<br>");
