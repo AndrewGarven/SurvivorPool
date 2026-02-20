@@ -133,13 +133,21 @@
           Logout
         </button>
       </form>
-
+    
+      {% if pool and entry and (not entry.winner_1 or not entry.winner_2) %}
+        <a href="{% url 'make_picks' join_code=pool.join_code %}"
+           class="auth-btn auth-btn--fixed"
+           aria-label="Make Picks">
+          Make Picks
+        </a>
+      {% endif %}
+      
       <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">
         Dashboard
       </a>
     </div>
   {% endif %}
-
+  
 <script>
 (function(){
   const bg = document.getElementById("ctBg");
