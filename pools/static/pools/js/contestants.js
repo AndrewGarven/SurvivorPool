@@ -57,33 +57,35 @@
   // Load field notes from static .txt
   // ----------------------------
   async function hydrateFieldNotes(BookEl) {
-    const pages = BookEl.querySelectorAll(".page[data-notes-url]");
-    for (const page of pages) {
-      // Only hydrate placeholders (don’t overwrite DB notes if present)
-      const placeholder = page.querySelector('.bio[data-bio="1"]');
-      if (!placeholder) continue;
-
-      const url = page.getAttribute("data-notes-url");
+    const bios = BookEl.querySelectorAll('.bio[data-bio-url]');
+  
+    for (const bioDiv of bios) {
+      // Only hydrate if it's currently a placeholder (optional but nice)
+      const isPlaceholder = bioDiv.classList.contains("bio-placeholder") || !bioDiv.textContent.trim();
+      if (!isPlaceholder) continue;
+  
+      const url = bioDiv.getAttribute("data-bio-url");
       if (!url) {
-        placeholder.textContent = "No field notes yet.";
+        bioDiv.textContent = "No field notes yet.";
+        bioDiv.classList.add("bio-placeholder");
         continue;
       }
-
+  
       try {
         const res = await fetch(url, { cache: "no-cache" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const txt = (await res.text()).trim();
-
+  
         if (txt.length) {
-          placeholder.classList.remove("bio-placeholder");
-          // preserve newlines
-          placeholder.textContent = txt;
-          placeholder.innerHTML = placeholder.textContent.replace(/\n/g, "<br>");
+          bioDiv.classList.remove("bio-placeholder");
+          bioDiv.innerHTML = txt.replace(/\n/g, "<br>");
         } else {
-          placeholder.textContent = "No field notes yet.";
+          bioDiv.textContent = "No field notes yet.";
+          bioDiv.classList.add("bio-placeholder");
         }
       } catch (e) {
-        placeholder.textContent = "No field notes yet.";
+        bioDiv.textContent = "No field notes yet.";
+        bioDiv.classList.add("bio-placeholder");
       }
     }
   }
