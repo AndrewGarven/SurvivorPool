@@ -158,63 +158,73 @@
 
 <script>
 (function(){
-  const wrap = document.querySelector('.fixed-auth-form');
-  const bg = document.getElementById('ctBg') || document.querySelector('.ct-bg');
-  if(!wrap || !bg) return;
+  const bg = document.getElementById("ctBg");
+  const wrap = document.querySelector(".fixed-auth-form");
+  if(!bg || !wrap) return;
 
-  // Make sure it's positioned by JS (not by default CSS)
-  wrap.style.position = 'fixed';
-  wrap.style.zIndex = 50;
-  wrap.style.opacity = 0;
-  wrap.style.transition = 'left .16s ease, top .16s ease, opacity .18s ease';
+  const PAD = 14; // distance from the contained image edge
+  const ANCHOR_Y = 0.06; // 0..1: how far down from the top of the contained image
 
   function getContainedRect(img){
     const r = img.getBoundingClientRect();
-    if(!img.naturalWidth || !img.naturalHeight) return r;
+    const natW = img.naturalWidth || 1;
+    const natH = img.naturalHeight || 1;
 
+    // how big the contained image is inside the element rect
     const elW = r.width, elH = r.height;
-    const imgAspect = img.naturalWidth / img.naturalHeight;
+    const imgAspect = natW / natH;
     const elAspect = elW / elH;
 
     let dispW, dispH;
     if(imgAspect > elAspect){ dispW = elW; dispH = dispW / imgAspect; }
     else { dispH = elH; dispW = dispH * imgAspect; }
 
-    const left0 = r.left + (elW - dispW) / 2;
-    const top0  = r.top  + (elH - dispH) / 2;
+    const left = r.left + (elW - dispW) / 2;
+    const top  = r.top  + (elH - dispH) / 2;
 
-    return { left: left0, top: top0, right: left0 + dispW, bottom: top0 + dispH, width: dispW, height: dispH };
+    return { left, top, right: left + dispW, bottom: top + dispH, width: dispW, height: dispH };
   }
 
   function place(){
     const r = getContainedRect(bg);
-    const PAD = 14;
+    if(r.width <= 0 || r.height <= 0) return;
 
-    // measure after layout
-    const w = wrap.offsetWidth || 160;
+    // Make sure we are fixed-positioned and not pinned by "right"
+    wrap.style.position = "fixed";
+    wrap.style.right = "auto";
+    wrap.style.bottom = "auto";
+    wrap.style.transform = "none";
+    wrap.style.zIndex = 9999;
 
+    const w = wrap.offsetWidth || 180;
+
+    // right side of contained bg, with padding
     let left = Math.round(r.right - PAD - w);
-    let top  = Math.round(r.top + PAD);
+    let top  = Math.round(r.top + r.height * ANCHOR_Y);
 
-    // clamp inside viewport
+    // clamp into viewport just in case
     left = Math.max(6, Math.min(left, window.innerWidth - w - 6));
     top  = Math.max(6, Math.min(top,  window.innerHeight - 6));
 
-    wrap.style.left = left + 'px';
-    wrap.style.top  = top + 'px';
-    wrap.style.opacity = 1;
+    wrap.style.left = `${left}px`;
+    wrap.style.top  = `${top}px`;
   }
 
-  let t = null;
-  function relayout(){ clearTimeout(t); t = setTimeout(place, 60); }
-
   if(bg.complete) place();
-  bg.addEventListener('load', place);
-  window.addEventListener('resize', relayout);
+  bg.addEventListener("load", place);
 
-  // catch font/layout shifts
-  setTimeout(place, 100);
-  setTimeout(place, 400);
+  let t = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = setTimeout(place, 50);
+  });
+
+  window.addEventListener("DOMContentLoaded", place);
+  window.addEventListener("load", place);
+
+  // catch late layout changes (fonts, etc.)
+  setTimeout(place, 150);
+  setTimeout(place, 600);
 })();
 </script>
 
