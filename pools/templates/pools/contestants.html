@@ -6,123 +6,232 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Contestant Catalog · Survivor Pool</title>
 
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
-  <!-- Page CSS -->
   <link rel="stylesheet" href="{% static 'pools/css/contestants.css' %}">
+  <link rel="stylesheet" href="{% static 'pools/styles.css' %}">
 </head>
 
 <body>
-  <main class="catalog-app" role="main" aria-labelledby="catalog-title">
-    <h1 id="catalog-title" class="sr-only">Contestant Catalog — Field Journal</h1>
+  <main class="catalog-app">
 
-    <!-- Contained background image (same approach as leaderboard) -->
+    <!-- Background frame -->
     <img
       class="ct-bg"
       id="ctBg"
       src="{% static 'pools/img/contestant_frame.png' %}"
       alt=""
-      aria-hidden="true"
     >
 
-    <!-- Overlay centered relative to the contained background -->
+    <!-- Overlay -->
     <section class="ct-overlay" id="ctOverlay">
       <div class="book-stage">
-        <div class="book-frame" id="bookFrame">
+        <div class="book-frame">
 
-          <div id="book" class="book" aria-label="Contestant flipbook">
+          <div class="book-shell"></div>
+
+          <div id="book" class="book">
+
             {% for c in contestants %}
-              <article
-                class="page"
-                aria-label="Contestant: {{ c.name }}"
-                data-contestant-id="{{ c.pk }}"
-              >
-                <div class="page-inner">
-                  <figure class="portrait">
-                    {% if c.photo %}
-                      <img
-                        src="{% static 'pools/cast/season-50/' %}{{ c.photo.name|cut:'cast/season-50/' }}"
-                        alt="{{ c.name }} portrait"
-                        loading="lazy"
-                      >
-                    {% else %}
-                      <img
-                        src="{% static 'pools/img/portrait-placeholder.png' %}"
-                        alt="No portrait available"
-                        loading="lazy"
-                      >
-                    {% endif %}
+            <article class="page" data-contestant-id="{{ c.pk }}">
+
+              <div class="page-inner">
+
+                <!-- LEFT PAGE: PHOTO -->
+                <figure class="portrait">
+
+                  {% if c.photo %}
+                    <img
+                      src="{% static 'pools/cast/season-50/' %}{{ c.photo.name|cut:'cast/season-50/' }}"
+                      alt="{{ c.name }}"
+                      loading="lazy"
+                    >
+                  {% else %}
+                    <img
+                      src="{% static 'pools/img/portrait-placeholder.png' %}"
+                      alt="No portrait"
+                      loading="lazy"
+                    >
+                  {% endif %}
+
+                </figure>
+
+
+                <!-- RIGHT PAGE: ENTRY -->
+                <div class="entry">
+
+                  <h2 class="name">
+                    {{ c.name }}
+                  </h2>
+
+
+                  <div class="meta">
+
+                    <span class="status {% if c.is_eliminated %}is-out{% else %}is-active{% endif %}">
+                      {% if c.is_eliminated %}
+                        Eliminated
+                      {% else %}
+                        Active
+                      {% endif %}
+                    </span>
+
 
                     {% if c.tribe %}
-                      <figcaption class="tribe">{{ c.tribe }}</figcaption>
-                    {% endif %}
-                  </figure>
-
-                  <div class="entry">
-                    <h2 class="name">{{ c.name }}</h2>
-
-                    <div class="meta">
-                      <span class="status {% if c.is_eliminated %}is-out{% else %}is-active{% endif %}">
-                        {% if c.is_eliminated %}Eliminated{% else %}Active{% endif %}
+                      <span class="tribe-tag tribe-{{ c.tribe|slugify }}">
+                        {{ c.tribe }}
                       </span>
-                    </div>
+                    {% endif %}
 
-                    <!-- Bio container: JS will hydrate from static .txt when available -->
-                    <div class="bio-wrap">
-                      <div
-                        class="bio bio-placeholder"
-                        data-bio="1"
-                        data-bio-url="{% static 'pools/cast/season-50/bios/' %}{{ c.name|slugify }}.txt"
-                      >
+                  </div>
+
+
+                  <div class="bio-wrap">
+
+                    {% if c.photo %}
+                      <div class="bio bio-placeholder"
+                          data-bio-url="{% static 'pools/cast/season-50/bios/' %}{{ c.name|slugify }}.txt">
                         No field notes yet.
                       </div>
-                    </div>
+                    {% else %}
+                      <div class="bio bio-placeholder">
+                        No field notes yet.
+                      </div>
+                    {% endif %}
 
-                    <div class="footer-note">
-                      <span class="page-number">Page {{ forloop.counter }}</span>
-                      <span class="entry-date">Field notes</span>
-                    </div>
                   </div>
+
                 </div>
-              </article>
-            {% empty %}
-              <article class="page page-empty" aria-label="Empty catalog page">
-                <div class="page-inner">
-                  <div class="empty-note">
-                    <h2>No cast yet</h2>
-                    <p>Once contestants are added their portraits will appear here.</p>
-                  </div>
-                </div>
-              </article>
+
+              </div>
+
+            </article>
             {% endfor %}
 
-            {% if contestants and not contestants|length|divisibleby:2 %}
-              <article class="page page-empty" aria-label="Blank page">
-                <div class="page-inner">
-                  <div class="empty-note">&nbsp;</div>
-                </div>
-              </article>
-            {% endif %}
           </div>
 
-          <button id="prevBtn" class="nav-btn nav-btn--prev" aria-label="Previous page">◀</button>
-          <button id="nextBtn" class="nav-btn nav-btn--next" aria-label="Next page">▶</button>
+
+          <button id="prevBtn" class="nav-btn nav-btn--prev">
+            ◀
+          </button>
+
+          <button id="nextBtn" class="nav-btn nav-btn--next">
+            ▶
+          </button>
+
 
         </div>
       </div>
-
-      <noscript class="no-js-note">
-        <div class="no-js-inner">
-          <strong>Interactive flipbook requires JavaScript.</strong>
-          <p>Please enable JavaScript to flip pages or browse the catalog.</p>
-        </div>
-      </noscript>
     </section>
+
+
   </main>
 
-  <!-- PageFlip -->
-  <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js" defer></script>
-  <script src="{% static 'pools/js/contestants.js' %}" defer></script>
+  {% if user.is_authenticated %}
+    <div class="fixed-auth-form" style="margin:0;">
+      <form method="post" action="{% url 'logout' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">
+          Logout
+        </button>
+      </form>
+
+      <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">
+        Dashboard
+      </a>
+    </div>
+  {% endif %}
+ 
+  {% if user.is_authenticated %}
+  <div class="fixed-auth-form">
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">
+        Logout
+      </button>
+    </form>
+
+    <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">
+      Dashboard
+    </a>
+  </div>
+{% endif %}
+
+<script>
+(function(){
+  const bg = document.getElementById("ctBg");
+  const wrap = document.querySelector(".fixed-auth-form");
+  if(!bg || !wrap) return;
+
+  const PAD = 14; // distance from the contained image edge
+  const ANCHOR_Y = 0.06; // 0..1: how far down from the top of the contained image
+
+  function getContainedRect(img){
+    const r = img.getBoundingClientRect();
+    const natW = img.naturalWidth || 1;
+    const natH = img.naturalHeight || 1;
+
+    // how big the contained image is inside the element rect
+    const elW = r.width, elH = r.height;
+    const imgAspect = natW / natH;
+    const elAspect = elW / elH;
+
+    let dispW, dispH;
+    if(imgAspect > elAspect){ dispW = elW; dispH = dispW / imgAspect; }
+    else { dispH = elH; dispW = dispH * imgAspect; }
+
+    const left = r.left + (elW - dispW) / 2;
+    const top  = r.top  + (elH - dispH) / 2;
+
+    return { left, top, right: left + dispW, bottom: top + dispH, width: dispW, height: dispH };
+  }
+
+  function place(){
+    const r = getContainedRect(bg);
+    if(r.width <= 0 || r.height <= 0) return;
+
+    // Make sure we are fixed-positioned and not pinned by "right"
+    wrap.style.position = "fixed";
+    wrap.style.right = "auto";
+    wrap.style.bottom = "auto";
+    wrap.style.transform = "none";
+    wrap.style.zIndex = 9999;
+
+    const w = wrap.offsetWidth || 180;
+
+    // right side of contained bg, with padding
+    let left = Math.round(r.right - PAD - w);
+    let top  = Math.round(r.top + r.height * ANCHOR_Y);
+
+    // clamp into viewport just in case
+    left = Math.max(6, Math.min(left, window.innerWidth - w - 6));
+    top  = Math.max(6, Math.min(top,  window.innerHeight - 6));
+
+    wrap.style.left = `${left}px`;
+    wrap.style.top  = `${top}px`;
+  }
+
+  if(bg.complete) place();
+  bg.addEventListener("load", place);
+
+  let t = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = setTimeout(place, 50);
+  });
+
+  window.addEventListener("DOMContentLoaded", place);
+  window.addEventListener("load", place);
+
+  // catch late layout changes (fonts, etc.)
+  setTimeout(place, 150);
+  setTimeout(place, 600);
+})();
+</script>
+
+  <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js"></script>
+
+  <script src="{% static 'pools/js/contestants.js' %}"></script>
+
+
 </body>
 </html>
