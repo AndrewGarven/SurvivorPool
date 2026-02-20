@@ -13,6 +13,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+ALLOWED_HOSTS = [
+    "web-production-12a5.up.railway.app",
+    "localhost",
+    "127.0.0.1",
+]
+
 SECRET_KEY = '_aas&zd@y#juhwlk#=7xd*xilz-#&5ogvtigmt&dj@1-n=^6r!'
 SECRET_KEY = os.environ.get("SECRET_KEY", SECRET_KEY)
 
