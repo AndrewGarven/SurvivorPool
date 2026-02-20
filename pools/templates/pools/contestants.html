@@ -224,5 +224,12 @@
 
   <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js"></script>
   <script src="{% static 'pools/js/contestants.js' %}"></script>
+
+<!-- DEBUG:
+pool={{ pool|default:"(missing)" }}
+entry={{ entry|default:"(missing)" }}
+winner_1={{ entry.winner_1|default:"(missing/none)" }}
+winner_2={{ entry.winner_2|default:"(missing/none)" }}
+-->
 </body>
 </html>
