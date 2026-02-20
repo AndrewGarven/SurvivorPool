@@ -53,6 +53,41 @@
     );
   }
 
+  // ----------------------------
+  // Load field notes from static .txt
+  // ----------------------------
+  async function hydrateFieldNotes(BookEl) {
+    const pages = BookEl.querySelectorAll(".page[data-notes-url]");
+    for (const page of pages) {
+      // Only hydrate placeholders (don’t overwrite DB notes if present)
+      const placeholder = page.querySelector('.bio[data-bio="1"]');
+      if (!placeholder) continue;
+
+      const url = page.getAttribute("data-notes-url");
+      if (!url) {
+        placeholder.textContent = "No field notes yet.";
+        continue;
+      }
+
+      try {
+        const res = await fetch(url, { cache: "no-cache" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txt = (await res.text()).trim();
+
+        if (txt.length) {
+          placeholder.classList.remove("bio-placeholder");
+          // preserve newlines
+          placeholder.textContent = txt;
+          placeholder.innerHTML = placeholder.textContent.replace(/\n/g, "<br>");
+        } else {
+          placeholder.textContent = "No field notes yet.";
+        }
+      } catch (e) {
+        placeholder.textContent = "No field notes yet.";
+      }
+    }
+  }
+
   onReady(function () {
     const bg = document.getElementById("ctBg") || document.querySelector(".ct-bg");
     const overlay = document.getElementById("ctOverlay");
@@ -67,9 +102,9 @@
     const BASE_W = 900;
     const BASE_H = 650;
 
-    // Frame-fit targets
-    const TARGET_W_FRAC = 0.90;
-    const TARGET_H_FRAC = 0.70;
+    // Frame-fit targets (you are overriding these below with explicit targetW/targetH)
+    // const TARGET_W_FRAC = 0.90;
+    // const TARGET_H_FRAC = 0.70;
 
     function placeOverlay() {
       if (!bg.naturalWidth) return;
@@ -83,13 +118,12 @@
       // Put overlay at anchor point
       overlay.style.left = (r.left + r.width * ax) + "px";
 
-      // IMPORTANT: nudge down a bit to sit on notebook paper (tweak 0.02–0.06)
+      // Nudge down a bit to sit on notebook paper
       overlay.style.top  = (r.top + r.height * ay + r.height * 0.035) + "px";
 
- // how much of the background width the book should occupy
+      // How much of the background width/height the book should occupy
       const targetW = r.width  * 0.85;
-      const targetH = r.height * 0.75;  // <-- raise this a lot
-  // how much of the background height the book should occupy
+      const targetH = r.height * 0.75;
 
       const sW = targetW / BASE_W;
       const sH = targetH / BASE_H;
@@ -99,12 +133,14 @@
       overlay.style.setProperty("--ct-scale", s.toFixed(4));
     }
 
-
     const placeDebounced = debounce(placeOverlay, 70);
 
     if (bg.complete) placeOverlay();
     bg.addEventListener("load", placeOverlay);
     window.addEventListener("resize", placeDebounced);
+
+    // Load notes ASAP (doesn't depend on PageFlip)
+    hydrateFieldNotes(BookEl).catch(() => {});
 
     // PageFlip
     const PF = getPageFlipClass();
@@ -162,7 +198,7 @@
     const relayout = debounce(safeUpdate, 80);
     window.addEventListener("resize", relayout);
 
-    // Update after images load
+    // Update after images load (and after notes load)
     const imgs = BookEl.querySelectorAll("img");
     let pending = imgs.length;
 
@@ -191,7 +227,11 @@
       if (e.key === "ArrowRight") { e.preventDefault(); pageFlip.flipNext(); }
     });
 
+    // Click edge paging – BUT allow catalog picking to intercept first
     BookEl.addEventListener("click", function (ev) {
+      // If a pick handler already stopped propagation, don't flip.
+      if (ev.defaultPrevented) return;
+
       const rect = BookEl.getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const edge = rect.width * 0.18;
@@ -204,30 +244,36 @@
     try {
       const canPick = window.CATALOG_PICK && window.CATALOG_PICK.canPick;
       const joinCode = window.CATALOG_PICK && window.CATALOG_PICK.joinCode;
+
       if (canPick && joinCode) {
-        const pages = BookEl.querySelectorAll('.page[data-contestant-id]');
-        pages.forEach((p) => {
+        const pageEls = BookEl.querySelectorAll('.page[data-contestant-id]');
+        pageEls.forEach((p) => {
           p.style.cursor = 'pointer';
+
           p.addEventListener('click', (ev) => {
             // prevent flipping when picking
             ev.stopPropagation();
             ev.preventDefault();
 
             const cid = p.getAttribute('data-contestant-id');
-            // ask which pick to set
+
             const pick = prompt('Set pick for this contestant. Type: first_out, winner_1, or winner_2');
             if (!pick) return;
+
             const pickType = pick.trim();
             if (!['first_out','winner_1','winner_2'].includes(pickType)){
               alert('Invalid pick type');
               return;
             }
 
-            // send POST to server
+            // get csrftoken
             const csrftoken = (function(){
               const name = 'csrftoken=';
               const ca = document.cookie.split(';');
-              for(let i=0;i<ca.length;i++){ let c=ca[i].trim(); if(c.indexOf(name)===0) return decodeURIComponent(c.substring(name.length)); }
+              for(let i=0;i<ca.length;i++){
+                let c=ca[i].trim();
+                if(c.indexOf(name)===0) return decodeURIComponent(c.substring(name.length));
+              }
               return null;
             })();
 
@@ -239,15 +285,17 @@
                 'X-CSRFToken': csrftoken || ''
               },
               body: `pick_type=${encodeURIComponent(pickType)}&contestant_id=${encodeURIComponent(cid)}`
-            }).then(r => r.json()).then((data) => {
+            })
+            .then(r => r.json())
+            .then((data) => {
               if (data && data.success) {
                 alert(`Saved ${data.pick_type} → ${data.contestant}`);
-                // Optionally redirect to dashboard or picks page
                 window.location.href = `/pools/${joinCode}/picks/`;
               } else {
                 alert((data && data.error) || 'Save failed');
               }
-            }).catch((err) => { console.error(err); alert('Network error'); });
+            })
+            .catch((err) => { console.error(err); alert('Network error'); });
           });
         });
       }
