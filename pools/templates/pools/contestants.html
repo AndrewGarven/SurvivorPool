@@ -88,10 +88,8 @@
                   <div class="bio-wrap">
 
                     {% if c.photo %}
-                      <div class="bio-wrap">
-                        <div class="bio"
-                          data-bio-url="{% static 'pools/cast/season-50/bios/' %}{{ c.photo.name|cut:'cast/season-50/'|cut:'.jpg' }}.txt">
-                        </div>
+                      <div class="bio">
+                        data-bio-url="{% static 'pools/cast/season-50/bios/' %}{{ c.photo.name|cut:'cast/season-50/'|cut:'.jpg' }}.txt">
                       </div>
                     {% else %}
                       <div class="bio bio-placeholder">
