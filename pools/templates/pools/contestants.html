@@ -126,7 +126,21 @@
 
   </main>
 
+  {% if user.is_authenticated %}
+    <div class="fixed-auth-form" style="margin:0;">
+      <form method="post" action="{% url 'logout' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">
+          Logout
+        </button>
+      </form>
 
+      <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">
+        Dashboard
+      </a>
+    </div>
+  {% endif %}
+  
   <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js"></script>
 
   <script src="{% static 'pools/js/contestants.js' %}"></script>
