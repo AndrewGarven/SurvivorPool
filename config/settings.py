@@ -34,7 +34,11 @@ ALLOWED_HOSTS = os.environ.get(
 ).split(",")
 
 # Railway / proxy / CSRF support
-CSRF_TRUSTED_ORIGINS = ["https://*.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://survivorpool.me",
+    "https://www.survivorpool.me",
+    "https://*.up.railway.app",
+]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
