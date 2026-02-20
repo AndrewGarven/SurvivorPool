@@ -34,43 +34,62 @@
 
           <div id="book" class="book" aria-label="Contestant flipbook">
             {% for c in contestants %}
-              <article class="page" data-contestant-id="{{ c.pk }}" aria-label="Contestant: {{ c.name }}">
-                <div class="page-inner">
-                  <figure class="portrait">
-                    {% if c.photo %}
-                      <img src="{{ c.photo.url }}" alt="{{ c.name }} portrait" loading="lazy">
-                    {% else %}
-                      <img src="{% static 'pools/img/portrait-placeholder.png' %}" alt="No portrait available" loading="lazy">
-                    {% endif %}
+              {% with slug=c.name|slugify %}
+                {% with photo_path='pools/cast/season-50/'|add:slug|add:'.jpg' %}
+                  {% with notes_path='pools/cast/season-50/'|add:slug|add:'.txt' %}
+                    <article
+                      class="page"
+                      data-contestant-id="{{ c.pk }}"
+                      data-slug="{{ slug }}"
+                      data-photo-url="{% static photo_path %}"
+                      data-notes-url="{% static notes_path %}"
+                      aria-label="Contestant: {{ c.name }}"
+                    >
+                      <div class="page-inner">
+                        <figure class="portrait">
+                          {# Prefer uploaded photo if present; otherwise use static cast photo #}
+                          {% if c.photo %}
+                            <img src="{{ c.photo.url }}" alt="{{ c.name }} portrait" loading="lazy">
+                          {% else %}
+                            <img src="{% static photo_path %}" alt="{{ c.name }} portrait" loading="lazy">
+                          {% endif %}
+                        </figure>
 
-                    {# tribe caption removed — tribe shown as badge next to status instead #}
-                  </figure>
+                        <div class="entry">
+                          <h2 class="name">{{ c.name }}</h2>
 
-                  <div class="entry">
-                    <h2 class="name">{{ c.name }}</h2>
+                          <div class="meta">
+                            <span class="status {% if c.is_eliminated %}is-out{% else %}is-active{% endif %}">
+                              {% if c.is_eliminated %}Eliminated{% else %}Active{% endif %}
+                            </span>
+                            {% if c.tribe %}
+                              <span class="tribe-tag tribe-{{ c.tribe|slugify }}" data-tribe="{{ c.tribe|lower }}">{{ c.tribe }}</span>
+                            {% endif %}
+                            <span class="meta-dot"></span>
+                            <span class="meta-small"></span>
+                          </div>
 
-                    <div class="meta">
-                      <span class="status {% if c.is_eliminated %}is-out{% else %}is-active{% endif %}">
-                        {% if c.is_eliminated %}Eliminated{% else %}Active{% endif %}
-                      </span>
-                      {% if c.tribe %}
-                        <span class="tribe-tag tribe-{{ c.tribe|slugify }}" data-tribe="{{ c.tribe|lower }}">{{ c.tribe }}</span>
-                      {% endif %}
-                      <span class="meta-dot"></span>
-                      <span class="meta-small"></span>
-                    </div>
-                    <!-- Always render notes area so the right page never feels “empty” -->
-                    <div class="bio-wrap">
-                      {% if c.field_notes %}
-                        <div class="bio">{{ c.field_notes|linebreaksbr }}</div>
-                      {% else %}
-                        <div class="bio bio-placeholder">No field notes yet.</div>
-                      {% endif %}
-                    </div>
+                          <!-- Notes area:
+                               - If model field exists, show it.
+                               - Else show placeholder (JS can fetch data-notes-url .txt and replace). -->
+                          <div class="bio-wrap">
+                            {% if c.field_notes %}
+                              <div class="bio">{{ c.field_notes|linebreaksbr }}</div>
+                            {% else %}
+                              <div class="bio bio-placeholder" data-bio-placeholder="1">Loading field notes…</div>
+                              <noscript>
+                                <div class="bio bio-placeholder">Field notes require JavaScript.</div>
+                              </noscript>
+                            {% endif %}
+                          </div>
 
-                  </div>
-                </div>
-              </article>
+                        </div>
+                      </div>
+                    </article>
+                  {% endwith %}
+                {% endwith %}
+              {% endwith %}
+
             {% empty %}
               <article class="page page-empty" aria-label="Empty catalog page">
                 <div class="page-inner">
@@ -119,14 +138,13 @@
 
   <script>
     window.CATALOG_PICK = {
-      // ensure undefined/null becomes false before the yesno filter
       canPick: {{ can_pick_on_catalog|default_if_none:"False"|yesno:"true,false" }},
-      // pool may be absent so default to empty string and escape for JS
       joinCode: "{{ pool.join_code|default:''|escapejs }}"
     };
   </script>
   <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js" defer></script>
   <script src="{% static 'pools/js/contestants.js' %}" defer></script>
+
   <script>
   // Placement script for fixed auth/catalog/buttons (adapted from base.html)
   (function(){
