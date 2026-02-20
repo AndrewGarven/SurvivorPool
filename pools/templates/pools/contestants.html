@@ -140,7 +140,84 @@
       </a>
     </div>
   {% endif %}
-  
+ 
+  {% if user.is_authenticated %}
+  <div class="fixed-auth-form">
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="auth-btn auth-btn--fixed" aria-label="Sign out">
+        Logout
+      </button>
+    </form>
+
+    <a href="{% url 'dashboard' %}" class="auth-btn auth-btn--fixed" aria-label="Dashboard">
+      Dashboard
+    </a>
+  </div>
+{% endif %}
+
+<script>
+(function(){
+  const wrap = document.querySelector('.fixed-auth-form');
+  const bg = document.getElementById('ctBg') || document.querySelector('.ct-bg');
+  if(!wrap || !bg) return;
+
+  // Make sure it's positioned by JS (not by default CSS)
+  wrap.style.position = 'fixed';
+  wrap.style.zIndex = 50;
+  wrap.style.opacity = 0;
+  wrap.style.transition = 'left .16s ease, top .16s ease, opacity .18s ease';
+
+  function getContainedRect(img){
+    const r = img.getBoundingClientRect();
+    if(!img.naturalWidth || !img.naturalHeight) return r;
+
+    const elW = r.width, elH = r.height;
+    const imgAspect = img.naturalWidth / img.naturalHeight;
+    const elAspect = elW / elH;
+
+    let dispW, dispH;
+    if(imgAspect > elAspect){ dispW = elW; dispH = dispW / imgAspect; }
+    else { dispH = elH; dispW = dispH * imgAspect; }
+
+    const left0 = r.left + (elW - dispW) / 2;
+    const top0  = r.top  + (elH - dispH) / 2;
+
+    return { left: left0, top: top0, right: left0 + dispW, bottom: top0 + dispH, width: dispW, height: dispH };
+  }
+
+  function place(){
+    const r = getContainedRect(bg);
+    const PAD = 14;
+
+    // measure after layout
+    const w = wrap.offsetWidth || 160;
+
+    let left = Math.round(r.right - PAD - w);
+    let top  = Math.round(r.top + PAD);
+
+    // clamp inside viewport
+    left = Math.max(6, Math.min(left, window.innerWidth - w - 6));
+    top  = Math.max(6, Math.min(top,  window.innerHeight - 6));
+
+    wrap.style.left = left + 'px';
+    wrap.style.top  = top + 'px';
+    wrap.style.opacity = 1;
+  }
+
+  let t = null;
+  function relayout(){ clearTimeout(t); t = setTimeout(place, 60); }
+
+  if(bg.complete) place();
+  bg.addEventListener('load', place);
+  window.addEventListener('resize', relayout);
+
+  // catch font/layout shifts
+  setTimeout(place, 100);
+  setTimeout(place, 400);
+})();
+</script>
+
   <script src="https://unpkg.com/page-flip/dist/page-flip.browser.min.js"></script>
 
   <script src="{% static 'pools/js/contestants.js' %}"></script>
