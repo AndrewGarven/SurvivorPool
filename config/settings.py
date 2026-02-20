@@ -17,8 +17,9 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,.up.railway.app"
-).split(",")
+    "localhost",
+    "web-production-12a5.up.railway.app"
+)
 
 SECRET_KEY = '_aas&zd@y#juhwlk#=7xd*xilz-#&5ogvtigmt&dj@1-n=^6r!'
 SECRET_KEY = os.environ.get("SECRET_KEY", SECRET_KEY)
