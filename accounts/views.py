@@ -52,11 +52,10 @@ def dashboard(request):
 
         # Cache eliminated contestant ids (for strike-through)
         if season.id not in eliminated_ids_by_season_id:
-            eliminated_ids_by_season_id[season.id] = set(
-                Episode.objects
-                .filter(season=season, eliminated__isnull=False)
-                .values_list("eliminated_id", flat=True)
-            )
+            eliminated_ids_by_season_id[season.id] = set(Episode.objects
+                                                         .filter(season=season, eliminated__isnull=False)
+                                                         .values_list("eliminated__id", flat=True)
+                                                         .distinct())
 
         weeks = weeks_by_season_id[season.id]
         eliminated_ids = eliminated_ids_by_season_id[season.id]

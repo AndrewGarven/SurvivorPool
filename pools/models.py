@@ -74,13 +74,10 @@ class Episode(models.Model):
     """
     season = models.ForeignKey(Season, on_delete=models.CASCADE, related_name="episodes")
     number = models.PositiveIntegerField()  # 1, 2, 3, ...
-    eliminated = models.ForeignKey(
-        Contestant,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="eliminated_in_episodes",
-    )
+    
+    eliminated = models.ManyToManyField(Contestant,
+                                        blank=True,
+                                        related_name="eliminated_in_episodes",)
 
     class Meta:
         unique_together = ("season", "number")

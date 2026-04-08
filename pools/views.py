@@ -102,9 +102,8 @@ def contestants(request, join_code: str):
         Contestant.objects
         .filter(season=season)
         .annotate(
-            is_eliminated=Exists(
-                Episode.objects.filter(season=season, eliminated=OuterRef("pk"))
-            )
+            is_eliminated=Exists(Episode.objects.filter(season=season,
+                                                        eliminated__id=OuterRef("pk")))
         )
         .order_by("name")
     )

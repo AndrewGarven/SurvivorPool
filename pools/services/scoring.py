@@ -107,8 +107,8 @@ def build_cumulative_eliminations(season: Season) -> List[set[int]]:
     weeks: List[set[int]] = []
 
     for ep in episodes:
-        if ep.eliminated_id:
-            cumulative.add(ep.eliminated_id)
-        weeks.append(set(cumulative))  # copy snapshot for this week
+        eliminated_ids = ep.eliminated.values_list("id", flat=True)
+        cumulative.update(eliminated_ids)
+        weeks.append(set(cumulative))
 
     return weeks

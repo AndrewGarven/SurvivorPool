@@ -52,8 +52,13 @@ class ContestantAdmin(admin.ModelAdmin):
 
 @admin.register(Episode)
 class EpisodeAdmin(admin.ModelAdmin):
-    list_display = ("season", "number", "eliminated")
+    list_display = ("season", "number", "get_eliminated")
     list_filter = ("season",)
     search_fields = ("season__name",)
     ordering = ("season", "number")
-    autocomplete_fields = ("season", "eliminated")
+    filter_horizontal = ("eliminated",)
+
+    def get_eliminated(self, obj):
+        return ", ".join(c.name for c in obj.eliminated.all()) or "-"
+
+    get_eliminated.short_description = "Eliminated"
